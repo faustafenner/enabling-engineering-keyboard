@@ -101,7 +101,7 @@ function Input() {
           </p>
         </div>
         <textarea
-          id="wordInput"
+          class = "input-area"
           value={wordInput}
           onChange={(e) => setWordInput(e.target.value)}
           placeholder={`Enter content, each line as a new paragraph\nExample:\nThe quick brown fox jumps over the lazy dog.\nEasy does it.`}
