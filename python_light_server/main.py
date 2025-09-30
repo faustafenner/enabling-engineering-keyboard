@@ -1,5 +1,5 @@
 from flask import Flask, request, jsonify
-from ssgg import SteelSeriesLighting
+from python_light_server.ssgg import SteelSeriesLighting
 
 app = Flask(__name__)
 
