@@ -18,28 +18,68 @@ function Display() {
   const progressFillRef = useRef(null);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    if (contentSections.length > 0 && currentIndex < contentSections.length) {
-      setCurrentSection(contentSections[currentIndex]);
-      setCurrentLetterIndex(0);
-      setSectionCompleted(false);
-      updateProgressBar(0, contentSections[currentIndex].length);
-    }
-  }, [contentSections, currentIndex]);
+  function updateCurrentLetterLighting(letter) {
+  if (!letter) return;
 
-  function handleLetterInput(e) {
-    const value = e.target.value;
-    if (!currentSection) return;
-    if (value === currentSection[currentLetterIndex]) {
-      const nextIndex = currentLetterIndex + 1;
-      setCurrentLetterIndex(nextIndex);
-      updateProgressBar(nextIndex, currentSection.length);
-      if (nextIndex === currentSection.length) {
-        setSectionCompleted(true);
-      }
+  fetch("http://127.0.0.1:5000/lights_on_key", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      key: letter.toUpperCase(), // SteelSeries expects key names
+      color: "#00FF00",          // green highlight
+      duration: 1000,             // milliseconds
+      interval: 1,
+    }),
+  })
+    .then((res) => res.json())
+    .then((data) => console.log(data))
+    .catch((err) => console.error("Error lighting key:", err));
+}
+
+
+  useEffect(() => {
+  if (contentSections.length > 0 && currentIndex < contentSections.length) {
+    const section = contentSections[currentIndex];
+    setCurrentSection(section);
+    setCurrentLetterIndex(0);
+    setSectionCompleted(false);
+    updateProgressBar(0, section.length);
+
+    //light up first letter of new section
+    if (section.length > 0) {
+      const firstLetter = section[0];
+      updateCurrentLetterLighting(firstLetter);
     }
-    e.target.value = "";
   }
+}, [contentSections, currentIndex]);
+
+
+function handleLetterInput(e) {
+  const value = e.target.value;
+  if (!currentSection) return;
+
+  if (value === currentSection[currentLetterIndex]) {
+    const nextIndex = currentLetterIndex + 1;
+    setCurrentLetterIndex(nextIndex);
+    updateProgressBar(nextIndex, currentSection.length);
+
+    //light up next letter if word not done
+    if (nextIndex < currentSection.length) {
+      const nextLetter = currentSection[nextIndex];
+      updateCurrentLetterLighting(nextLetter);
+    } else {
+      // turn off lights if section done
+      setSectionCompleted(true);
+      fetch("http://127.0.0.1:5000/lights_off", { method: "POST" });
+    }
+  }
+
+  // Clear input box
+  e.target.value = "";
+}
+
 
   function updateProgressBar(current, total) {
     if (progressFillRef.current) {
