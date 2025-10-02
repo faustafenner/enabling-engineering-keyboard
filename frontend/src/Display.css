@@ -51,7 +51,7 @@ h2 {
 }
 
 textarea {
-  width: 100%;
+  width: 97.5%;
   height: 200px;
   padding: 10px;
   border: 1px solid #ddd;
@@ -140,7 +140,7 @@ button:hover {
 }
 
 #letterInput {
-  width: 100%;
+  width: 96.5%;
   padding: 12px;
   font-size: 20px;
   text-align: center;
