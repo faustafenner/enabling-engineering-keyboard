@@ -8,7 +8,8 @@ function Input() {
 
   const [currentSection, setCurrentSection] = useState("");
   const [currentLetterIndex, setCurrentLetterIndex] = useState(0);
-
+  const [color, setColor] = useState("#00FF00");
+  const [keyToLight, setKeyToLight] = useState("");
 
   const progressFillRef = useRef(null);
 
@@ -77,6 +78,32 @@ function Input() {
     }
   }
 
+  function lightKey() {
+    fetch("http://localhost:5050/lights_on_key", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        key: keyToLight,
+        color: color,
+        duration: 2
+      })
+    })
+      .then(res => res.json())
+      .then(data => alert(JSON.stringify(data)))
+      .catch(err => alert("Error: " + err));
+  }
+
+  function runTestPy() {
+    fetch("http://localhost:5050/run_test", {
+      method: "POST"
+    })
+      .then(res => res.json())
+      .then(data => {
+        alert("Test.py finished!\nSTDOUT:\n" + data.stdout + "\nSTDERR:\n" + data.stderr);
+      })
+      .catch(err => alert("Error: " + err));
+  }
+
   return (
     <div>
       <div className="navbar">
@@ -112,6 +139,24 @@ function Input() {
             Clear All
           </button>
         </div>
+      </div>
+      <div style={{ marginTop: "2em" }}>
+        <h3>Test Light Key</h3>
+        <input
+          type="text"
+          placeholder="Key (e.g. A)"
+          value={keyToLight}
+          onChange={e => setKeyToLight(e.target.value)}
+          style={{ marginRight: "1em" }}
+        />
+        <input
+          type="color"
+          value={color}
+          onChange={e => setColor(e.target.value)}
+          style={{ marginRight: "1em" }}
+        />
+        <button onClick={lightKey}>Light Key</button>
+        <button onClick={runTestPy} style={{ marginLeft: "1em" }}>Run test.py</button>
       </div>
     </div>
   );
