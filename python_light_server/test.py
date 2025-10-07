@@ -1,4 +1,4 @@
-from python_light_server.ssgg import SteelSeriesLighting
+from ssgg import SteelSeriesLighting
 
 def main():
     # 初始化

@@ -22,7 +22,7 @@ class SteelSeriesLighting:
         """
         # 默认路径：SteelSeries Engine 在 Windows 的安装目录
         if core_props_path is None:
-            core_props_path = r"C:\ProgramData\SteelSeries\SteelSeries Engine 3\coreProps.json"
+            core_props_path = r'/Library/Application Support/SteelSeries Engine 3/coreProps.json'
 
         # 检查配置文件是否存在
         if not os.path.exists(core_props_path):
@@ -45,6 +45,7 @@ class SteelSeriesLighting:
             time.sleep(retry_interval)
 
         print(f"[INFO] Connected to SteelSeries GG at {self.base_url}")
+        self._bound_events = set()   # 事件/按键 绑定缓存
 
     def _post(self, endpoint, payload):
         """
@@ -156,24 +157,33 @@ class SteelSeriesLighting:
         payload = {"game": self.game, "event": event, "data": {"value": value}}
         return self._post("game_event", payload)
     
+    def ensure_key_bound(self, event, key, hex_color):
+        """
+        确保事件与按键绑定，仅在第一次使用时注册/绑定，避免闪烁
+
+        :param event: 事件名称
+        :param key: 键位标识
+        :param hex_color: 十六进制颜色 "#RRGGBB"
+        """
+        if event not in self._bound_events:
+            self.register_event(event)
+            self.bind_key_color(event, key, hex_color)
+            self._bound_events.add(event)
+
     def lights_on_key(self, event, key, hex_color="#FFFFFF", interval=1, duration=3600):
         """
         一键点亮并保持按键持续亮着（通过定时刷新）
-        结束后自动执行 lights_off()
+        结束后自动关闭该键
         """
-        # 注册事件 + 绑定颜色
-        self.register_event(event)
-        self.bind_key_color(event, key, hex_color)
-
+        self.ensure_key_bound(event, key, hex_color)
         # 循环刷新，保持亮灯
         start = time.time()
         while time.time() - start < duration:
             self.set_event_value(event, 1)
             print(f"[INFO] Key '{key.upper()}' refreshed, keeping light alive...")
             time.sleep(interval)
-
         print(f"[INFO] Key '{key.upper()}' lights_on finished after {duration} seconds")
-        self.lights_off()   # 自动熄灭
+        self.set_event_value(event, 0)   # 只关闭该键
 
     def lights_on_region(self, event, key, hex_color="#FFFFFF", interval=1, duration=3600):
         """

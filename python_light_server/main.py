@@ -1,11 +1,11 @@
 from flask import Flask, request, jsonify
-from python_light_server.ssgg import SteelSeriesLighting
+from ssgg import SteelSeriesLighting
 
 app = Flask(__name__)
 
 # 初始化灯光控制
 lighting = SteelSeriesLighting(game="MYAPP")
-lighting.register_game("Python Test", "Me")
+lighting.register_game("Python Test", "Me") 
 
 @app.route("/lights_on_key", methods=["POST"])
 def lights_on_key():
