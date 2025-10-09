@@ -48,8 +48,7 @@ function Input() {
       }
     });
 
-
-
+    //use
     localStorage.setItem("contentSections", JSON.stringify(sections));
     localStorage.setItem("currentIndex", 0);
     localStorage.setItem("currentSection", "");
@@ -104,6 +103,11 @@ function Input() {
       .catch(err => alert("Error: " + err));
   }
 
+  function createAndNavigate() {
+    createWordList();
+    navigate("/display");
+  }
+
   return (
     <div>
       <div className="navbar">
@@ -134,7 +138,7 @@ function Input() {
           placeholder={`Enter content, each line as a new paragraph\nExample:\nThe quick brown fox jumps over the lazy dog.\nEasy does it.`}
         />
         <div className="button-group">
-          <button onClick={createWordList}>Create List</button>
+          <button onClick={createAndNavigate}>Create List</button>
           <button className="clear-btn" onClick={clearWords}>
             Clear All
           </button>
