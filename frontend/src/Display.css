@@ -1,47 +1,21 @@
+@import url("https://fonts.googleapis.com/css2?family=Mulish:wght@400;700&display=swap");
+
 body {
-  font-family: Arial, sans-serif;
+  font-family: "Mulish", Arial, sans-serif;
   margin: 0;
   padding: 20px;
-  background-color: #f5f5f5;
-}
-
-.navbar {
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  z-index: 1000;
-}
-
-.nav-btn {
-  background-color: #007bff;
-  color: white;
-  padding: 10px 15px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 14px;
-  margin-left: 10px;
-}
-
-.nav-btn:hover {
-  background-color: #0069d9;
+  background-color: #1e1e1e;
 }
 
 .container {
-  max-width: 800px;
+  max-width: 900px;
   margin: 0 auto;
-  background-color: #fff;
+  background-color: #1e1e1e;
   border-radius: 8px;
   padding: 20px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   min-height: 500px;
   margin-top: 80px;
-}
-
-h1 {
-  color: #333;
-  text-align: center;
-  margin-top: 0;
 }
 
 h2 {
@@ -50,80 +24,34 @@ h2 {
   padding-bottom: 10px;
 }
 
-textarea {
-  width: 97.5%;
-  height: 200px;
-  padding: 10px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  resize: vertical;
-  font-size: 16px;
-}
-
-button {
+/* button {
   background-color: #4caf50;
   color: white;
-  padding: 12px 20px;
+  padding: 20px 20px;
   border: none;
   border-radius: 4px;
   cursor: pointer;
-  font-size: 16px;
+  font-size: 24px;
   margin-top: 10px;
   width: 100%;
-}
+} */
 
 button:hover {
   background-color: #45a049;
 }
 
-.clear-btn {
-  background-color: #f44336;
-}
-
-.clear-btn:hover {
-  background-color: #d32f2f;
-}
-
-.next-btn {
-  background-color: #007bff;
-}
-
-.next-btn:hover {
-  background-color: #0069d9;
-}
-
-.next-btn:disabled {
-  background-color: #cccccc;
-  cursor: not-allowed;
-}
-
-.fullscreen-btn {
-  background-color: #ff9800;
-}
-
-.fullscreen-btn:hover {
-  background-color: #e68900;
-}
-
-.exit-fullscreen-btn {
-  background-color: #f44336;
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  z-index: 1001;
-  width: auto;
-  padding: 10px 15px;
-}
-
-.exit-fullscreen-btn:hover {
-  background-color: #d32f2f;
-}
-
-.instructions {
-  background-color: #e3f2fd;
-  padding: 15px;
-  border-radius: 4px;
-  margin-bottom: 20px;
+.next-section-btn {
+  background-color: #4caf50;
+  max-width: 200px;
+  margin: 0 auto;
+  color: white;
+  padding: 20px 20px;
+  border: none;
+  border-radius: 30px;
+  cursor: pointer;
+  font-size: 24px;
+  margin-top: 10px;
+  width: 100%;
 }
 
 .button-group {
@@ -135,93 +63,9 @@ button:hover {
   flex: 1;
 }
 
-.input-container {
-  margin-top: 15px;
-}
-
-#letterInput {
-  width: 96.5%;
-  padding: 12px;
-  font-size: 20px;
-  text-align: center;
-  border: 2px solid #007bff;
-  border-radius: 4px;
-}
-
-.progress-bar {
-  height: 12px;
-  background-color: #e9ecef;
-  border-radius: 6px;
-  margin: 15px 0;
-  overflow: hidden;
-}
-
-.progress-fill {
-  height: 100%;
-  background-color: #007bff;
-  width: 0%;
-  transition: width 0.3s ease;
-}
-
-.word-title {
-  font-weight: bold;
-  margin-bottom: 15px;
-  font-size: 28px;
-  color: #007bff;
-  text-align: center;
-}
-
-.congrats-message {
-  font-size: 22px;
-  color: #28a745;
-  font-weight: bold;
-  text-align: center;
-  margin: 20px 0;
-  padding: 15px;
-  background-color: #d4edda;
-  border-radius: 8px;
-  border: 1px solid #28a745;
-}
-
-.all-done-message {
-  font-size: 24px;
-  color: #007bff;
-  font-weight: bold;
-  text-align: center;
-  margin: 20px 0;
-  padding: 20px;
-  background-color: #e3f2fd;
-  border-radius: 8px;
-  border: 1px solid #007bff;
-}
-
-.section-indicator {
-  font-size: 14px;
-  color: #666;
-  text-align: center;
-  margin-top: 10px;
-  font-style: italic;
-}
-
-.paragraph-section {
-  margin-bottom: 20px;
-  padding: 15px;
-  border: 1px solid #ddd;
-  border-radius: 5px;
-  background-color: #fafafa;
-}
-
-.content-display {
-  font-size: 36px;
-  font-family: "Courier New", monospace;
-  line-height: 1.5;
-  text-align: center;
-  margin: 20px 0;
-}
-
 #wordContainer {
-  font-size: 48px; /* 增加字体大小，默认为 36px 左右会太小 */
-  font-family: "Courier New", monospace;
+  font-size: 48px;
+  font-family: "Mulish", "Courier New", monospace, Arial, sans-serif;
   line-height: 1.8;
   text-align: center;
   margin: 30px 0;
@@ -229,39 +73,84 @@ button:hover {
   padding: 20px;
 }
 
-#wordContainer p {
-  margin: 0;
-  letter-spacing: 2px; /* 增加字母间距，提高可读性 */
-}
-
 #wordContainer span {
   display: inline-block;
-  padding: 2px 4px;
+  padding: 10px 12px;
+  margin: 10px;
+  min-width: 100px;
+  border-radius: 30px;
+  background-color: #181818;
+  color: #ffffff;
+  font-size: 120px;
+  font-family: "Mulish", "Courier New", monospace, Arial, sans-serif;
+  transition: background 0.2s, color 0.2s, transform 0.2s;
 }
 
 #wordContainer .current {
-  color: #007bff;
-  text-decoration: underline;
-  font-weight: bold;
-  transform: scale(1.2); /* 稍微放大当前字母 */
-  transition: transform 0.2s ease;
+  background-color: #181818; /* same as default */
+  color: #ffffff;
+  text-decoration: none;
+  font-weight: normal;
+  transform: none;
 }
 
 #wordContainer .correct {
-  color: #28a745;
+  background-color: #28a745; /* green rectangle for correct/typed letter */
+  color: #ffffff; /* keep text black */
   font-weight: 500;
 }
 
-.incorrect {
-  color: #dc3545;
+.quit-btn {
+  position: fixed;
+  width: 75px;
+  height: 25px;
+  left: 30px;
+  bottom: 30px;
+  background-color: #f44336;
+  color: white;
+  border: none;
+  border-radius: 20px;
+  font-size: 18px;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
 }
 
-.typing-instruction {
-  font-size: 18px;
-  color: #555;
-  margin: 15px 0;
-  padding: 10px;
-  background-color: #e3f2fd;
-  border-radius: 4px;
-  text-align: center;
+.quit-btn:hover {
+  background-color: #d32f2f;
+}
+
+.section-progress-container {
+  position: fixed;
+  top: 30px;
+  left: 30px;
+  z-index: 1100;
+  width: 150px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.section-progress-bar {
+  width: 100%;
+  height: 18px;
+  background: #333;
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 6px;
+}
+
+.section-progress-fill {
+  height: 100%;
+  background: #28a745;
+  width: 0%;
+  border-radius: 6px;
+  transition: width 0.3s;
+}
+
+.section-progress-label {
+  color: #fff;
+  font-size: 16px;
+  font-family: "Mulish", Arial, sans-serif;
+  margin-top: 2px;
+  margin-left: 2px;
 }

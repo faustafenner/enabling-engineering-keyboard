@@ -5,7 +5,6 @@ import "./Input.css";
 function Input() {
   const navigate = useNavigate();
   const [wordInput, setWordInput] = useState("");
-
   const [currentSection, setCurrentSection] = useState("");
   const [currentLetterIndex, setCurrentLetterIndex] = useState(0);
   const [color, setColor] = useState("#00FF00");
@@ -48,12 +47,15 @@ function Input() {
       }
     });
 
-    //use
+
+
     localStorage.setItem("contentSections", JSON.stringify(sections));
     localStorage.setItem("currentIndex", 0);
     localStorage.setItem("currentSection", "");
     localStorage.setItem("currentLetterIndex", 0);
     localStorage.setItem("sectionCompleted", false);
+    // Automatically navigate to the display area after creating the list
+    navigate("/display");
   }
 
   function clearWords() {
@@ -103,23 +105,10 @@ function Input() {
       .catch(err => alert("Error: " + err));
   }
 
-  function createAndNavigate() {
-    createWordList();
-    navigate("/display");
-  }
-
   return (
     <div>
-      <div className="navbar">
-        <button className="nav-btn" onClick={() => navigate("/")}>
-          Input Area
-        </button>
-        <button className="nav-btn" onClick={() => navigate("/display")}>
-          Display Area
-        </button>
-      </div>
       <div className="container">
-        <h1>Word Display GUI - Input Area</h1>
+        <h1>Setup Wizard</h1>
         <div className="instructions">
           <p>
             <strong>Instructions:</strong> Enter content in the input area
@@ -135,12 +124,12 @@ function Input() {
           class = "input-area"
           value={wordInput}
           onChange={(e) => setWordInput(e.target.value)}
-          placeholder={`Enter content, each line as a new paragraph\nExample:\nThe quick brown fox jumps over the lazy dog.\nEasy does it.`}
+          placeholder={`Enter\ncontent\nlike\nthis`}
         />
         <div className="button-group">
-          <button onClick={createAndNavigate}>Create List</button>
+          <button onClick={createWordList}>Start</button>
           <button className="clear-btn" onClick={clearWords}>
-            Clear All
+            Clear Entries
           </button>
         </div>
       </div>

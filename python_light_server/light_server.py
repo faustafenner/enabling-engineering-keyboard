@@ -24,7 +24,7 @@ for letter in string.ascii_lowercase:
     event = f"{letter.upper()}KEY_EVENT"  # Unique event name for each letter
     try:
         lighting.register_event(event)  # Register the event with SteelSeries GG
-        lighting.bind_key_color(event, letter, "#00FF00")  # Bind the key to the event with a default color
+        lighting.bind_key_color(event, letter, "#ffffff")  # Bind the key to the event with a default color
     except Exception as e:
         print(f"Failed to pre-bind {letter}: {e}")
 
@@ -33,7 +33,7 @@ for letter in string.ascii_lowercase:
 def lights_on_key():
     data = request.get_json()
     key = data.get("key")  # The letter to light
-    color = data.get("color", "#00FF00")  # Color to use (default green)
+    color = data.get("color", "#ffffff")  # Color to use (default green)
     duration = data.get("duration", 1)    # Duration in seconds
 
     # Only allow single letter keys (A-Z)

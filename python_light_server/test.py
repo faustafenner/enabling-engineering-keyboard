@@ -1,5 +1,6 @@
 from ssgg import SteelSeriesLighting
 
+
 def main():
     # 初始化
     lighting = SteelSeriesLighting(game="MYAPP")
