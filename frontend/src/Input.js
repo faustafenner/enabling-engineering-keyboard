@@ -112,12 +112,11 @@ function Input() {
         <div className="instructions">
           <p>
             <strong>Instructions:</strong> Enter content in the input area
-            below. Each line should be a separate paragraph. Click "Create List"
-            to generate the content sections.
+            below. Each line should be a separate paragraph. Click "Start" to begin.
           </p>
           <p>
-            <strong>Note:</strong> Long content will be split into sections of
-            approximately 100 letters without breaking words.
+            {/* <strong>Note:</strong> Long content will be split into sections of
+            approximately 100 letters without breaking words. */}
           </p>
         </div>
         <textarea

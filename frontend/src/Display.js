@@ -113,9 +113,6 @@ useEffect(() => {
   return () => window.removeEventListener("keydown", handleKeyPress);
 }, [currentSection, currentLetterIndex, sectionCompleted]);
 
-
-
-
 // function handleKeyPress(e) {
 //   if (!currentSection || sectionCompleted) return;
 
@@ -154,6 +151,10 @@ useEffect(() => {
     if (currentIndex + 1 < contentSections.length) {
       setCurrentIndex(currentIndex + 1);
       setSectionCompleted(false);
+    }
+    else {
+      // All sections completed, go to success page
+      navigate("/success");
     }
   }
 
@@ -214,9 +215,8 @@ useEffect(() => {
               id="nextSectionBtn" 
               className="next-section-btn"
               onClick={nextSection}
-              disabled={currentIndex + 1 >= contentSections.length}
             >
-              Next Word
+              {currentIndex + 1 < contentSections.length ? "Next Word" : "Finish"}
             </button>
           )}
         </div>
