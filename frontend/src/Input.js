@@ -115,7 +115,7 @@ function Input() {
             below. Each line should be a separate paragraph. Click "Start" to begin.
           </p>
           <p>
-            {/* <strong>Note:</strong> Long content will be split into sections of
+            {/* <strong>Note:</strong> Long content will be split into sec tions of
             approximately 100 letters without breaking words. */}
           </p>
         </div>
