@@ -6,6 +6,7 @@ function Display() {
   const [currentSection, setCurrentSection] = useState(""); //state for the current section of text being displayed
   const [currentLetterIndex, setCurrentLetterIndex] = useState(0); //state for the index of the current letter the user should type
   const [sectionCompleted, setSectionCompleted] = useState(false); //state to track if the current section is completed
+  const [fontSize, setFontSize] = useState(120);
   
   //state for all content sections (array of strings)
   const [contentSections, setContentSections] = useState(() => {
@@ -95,6 +96,11 @@ useEffect(() => {
     const key = e.key;
     if (key.length !== 1) return;
 
+    // Prevent page scroll when spacebar is pressed
+    if (key === " ") {
+      e.preventDefault();
+    }
+
     if (key === currentSection[currentLetterIndex]) {
       const nextIndex = currentLetterIndex + 1;
       setCurrentLetterIndex(nextIndex);
@@ -164,8 +170,36 @@ useEffect(() => {
   }
 
   // Main render
+  // Ref array for each letter
+  const letterRefs = useRef([]);
+
+  useEffect(() => {
+    if (letterRefs.current[currentLetterIndex]) {
+      letterRefs.current[currentLetterIndex].scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+        inline: "center"
+      });
+    }
+  }, [currentLetterIndex, currentSection]);
+
   return (
     <div>
+      {/* Font size slider at top */}
+      <div style={{ marginBottom: "1em", textAlign: "center" }}>
+        <label htmlFor="fontSizeSlider" style={{ marginRight: "1em", color: "#fff" }}>Font Size:</label>
+        <input
+          id="fontSizeSlider"
+          type="range"
+          min={100}
+          max={200}
+          value={fontSize}
+          onChange={e => setFontSize(Number(e.target.value))}
+          style={{ verticalAlign: "middle" }}
+        />
+        <span style={{ marginLeft: "1em", fontWeight: "bold", color: "#fff" }}>{fontSize}px</span>
+      </div>
+
       {/* Section progress bar in top left */}
       <div className="section-progress-container">
         <div className="section-progress-bar">
@@ -187,20 +221,47 @@ useEffect(() => {
           {/* Display the current section, highlighting the current and correct letters */}
           {currentSection ? (
             <p>
-              {currentSection.split("").map((char, idx) => (
-                <span
-                  key={idx}
-                  className={
-                    idx < currentLetterIndex
-                      ? "correct"
-                      : idx === currentLetterIndex
-                      ? "current"
-                      : ""
-                  }
-                >
-                  {char}
-                </span>
-              ))}
+              {currentSection.split("").map((char, idx) => {
+  // Common style for both space and letter boxes
+  const isCurrent = idx === currentLetterIndex;
+  const isCorrect = idx < currentLetterIndex;
+  const boxStyle = {
+    minWidth: fontSize * 0.65 + "px", // width similar to a letter
+    padding: fontSize * 0.18 + "px " + fontSize * 0.22 + "px",
+    margin: fontSize * 0.08 + "px",
+    borderRadius: fontSize * 0.25 + "px",
+    display: "inline-block",
+    backgroundColor: isCorrect
+      ? "#28a745"
+      : isCurrent
+      ? "#ff9800"
+      : "#181818",
+    color: "#ffffff",
+    fontSize: fontSize + "px",
+    fontFamily: 'Mulish, Courier New, monospace, Arial, sans-serif',
+    fontWeight: isCurrent ? "bold" : "normal",
+    textAlign: "center",
+    verticalAlign: "middle",
+    lineHeight: fontSize + "px",
+    boxSizing: "border-box"
+  };
+  return (
+    <span
+      key={idx}
+      ref={el => letterRefs.current[idx] = el}
+      className={
+        isCorrect
+          ? "correct"
+          : isCurrent
+          ? "current"
+          : ""
+      }
+      style={boxStyle}
+    >
+      {char === " " ? "\u00A0" : char}
+    </span>
+  );
+})}
             </p>
           ) : (
             <p style={{ color: "#999", fontStyle: "italic" }}>

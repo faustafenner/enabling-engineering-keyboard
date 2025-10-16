@@ -8,7 +8,7 @@ body {
 }
 
 .container {
-  max-width: 900px;
+  max-width: 1600px;
   margin: 0 auto;
   background-color: #1e1e1e;
   border-radius: 8px;
@@ -42,7 +42,7 @@ button:hover {
 
 .next-section-btn {
   background-color: #4caf50;
-  max-width: 200px;
+  max-width: 250px;
   margin: 0 auto;
   color: white;
   padding: 20px 20px;
@@ -66,7 +66,6 @@ button:hover {
 #wordContainer {
   font-size: 48px;
   font-family: "Mulish", "Courier New", monospace, Arial, sans-serif;
-  line-height: 1.8;
   text-align: center;
   margin: 30px 0;
   min-height: 100px;
@@ -74,23 +73,25 @@ button:hover {
 }
 
 #wordContainer span {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   padding: 10px 12px;
   margin: 10px;
   min-width: 100px;
+  max-width:300px;
   border-radius: 30px;
   background-color: #181818;
   color: #ffffff;
-  font-size: 120px;
   font-family: "Mulish", "Courier New", monospace, Arial, sans-serif;
   transition: background 0.2s, color 0.2s, transform 0.2s;
 }
 
 #wordContainer .current {
-  background-color: #181818; /* same as default */
+  background-color: #ff9800; /* orange for current letter */
   color: #ffffff;
   text-decoration: none;
-  font-weight: normal;
+  font-weight: bold;
   transform: none;
 }
 
