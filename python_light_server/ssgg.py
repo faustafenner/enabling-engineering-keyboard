@@ -12,54 +12,73 @@ class SteelSeriesLighting:
         "region3": list("ujmikolp")
     }
 
+    ALL_OFF_EVENT = "__ALL_OFF__"
+
     def __init__(self, game="MYAPP", core_props_path=None, retry_interval=5):
-        """
-        初始化 SteelSeries Lighting 控制器
+            """
+            初始化 SteelSeries Lighting 控制器
 
-        :param game: 游戏/应用标识符（字符串，必须唯一，例如 "MYAPP"）
-        :param core_props_path: coreProps.json 的路径（默认安装位置）
-        :param retry_interval: SteelSeries GG 未启动时的重试间隔（秒）
-        """
-        # 默认路径：SteelSeries Engine 在 Windows 的安装目录
-        if core_props_path is None:
-            core_props_path = r'/Library/Application Support/SteelSeries Engine 3/coreProps.json'
+            :param game: 游戏/应用标识符（字符串，必须唯一，例如 "MYAPP"）
+            :param core_props_path: coreProps.json 的路径（优先使用此值；若为空将自动探测）
+            :param retry_interval: SteelSeries GG 未启动时的重试间隔（秒）
+            """
+            # 1) 优先顺序：显式参数 > 环境变量 > 常见系统路径（GG/Engine 新旧版本）
+            candidates = [
+                core_props_path,
+                os.getenv("STEELSERIES_COREPROPS"),
+                r"C:\ProgramData\SteelSeries\SteelSeries Engine 3\coreProps.json",  # Windows (Engine 3)
+                r"C:\ProgramData\SteelSeries\SteelSeries GG\coreProps.json",       # Windows (GG)
+                "/Library/Application Support/SteelSeries Engine 3/coreProps.json", # macOS (Engine 3)
+                "/Library/Application Support/SteelSeries GG/coreProps.json",       # macOS (GG)
+                os.path.expanduser("~/.local/share/SteelSeries Engine 3/coreProps.json"),  # Linux (旧)
+                os.path.expanduser("~/.local/share/SteelSeries GG/coreProps.json"),        # Linux (GG)
+            ]
 
-        # 检查配置文件是否存在
-        if not os.path.exists(core_props_path):
-            raise FileNotFoundError(f"coreProps.json not found at {core_props_path}")
+            core_props_resolved = next((p for p in candidates if p and os.path.exists(p)), None)
+            if not core_props_resolved:
+                raise FileNotFoundError(
+                    "coreProps.json not found. Ensure SteelSeries GG (Engine) is running.\n"
+                    "Tip: set env STEELSERIES_COREPROPS to the file path, or pass core_props_path explicitly."
+                )
 
-        # 从 coreProps.json 读取 API 地址和端口
-        with open(core_props_path, "r") as f:
-            core_props = json.load(f)
+            # 2) 读取 API 地址与端口
+            with open(core_props_resolved, "r", encoding="utf-8") as f:
+                core_props = json.load(f)
 
-        address = core_props.get("address")
-        if not address:
-            raise ValueError("Could not find 'address' in coreProps.json")
+            address = core_props.get("address")
+            if not address:
+                raise ValueError(f"Could not find 'address' in coreProps.json at {core_props_resolved}")
 
-        self.game = game
-        self.base_url = f"http://{address}"
+            self.game = game
+            self.base_url = f"http://{address}"
 
-        # 自检：等待 SteelSeries GG Engine 启动
-        while not self._health_check():
-            print(f"[WARN] SteelSeries GG not available at {self.base_url}, retrying in {retry_interval}s...")
-            time.sleep(retry_interval)
+            # 3) 自检：等待 SteelSeries GG Engine 启动
+            while not self._health_check():
+                print(f"[WARN] SteelSeries GG not available at {self.base_url}, retrying in {retry_interval}s...")
+                time.sleep(retry_interval)
 
-        print(f"[INFO] Connected to SteelSeries GG at {self.base_url}")
-        self._bound_events = set()   # 事件/按键 绑定缓存
+            print(f"[INFO] Connected to SteelSeries GG at {self.base_url} (coreProps: {core_props_resolved})")
+            self._bound_events = set()   # 事件/按键 绑定缓存
+            self._ensure_all_off_event()
+
 
     def _post(self, endpoint, payload):
         """
-        发送 POST 请求到 SteelSeries GG API
-
-        :param endpoint: API 路径（例如 "game_metadata"）
-        :param payload: 请求体（字典）
-        :return: JSON 响应（如果有）
+        发送 POST 请求到 SteelSeries GG API（增强版）
+        —— 自动转 JSON，若 GG 返回错误则打印详细信息
         """
-        url = f"{self.base_url}/{endpoint}"
-        headers = {"Content-Type": "application/json"}
-        r = requests.post(url, headers=headers, data=json.dumps(payload))
-        r.raise_for_status()
+        url = f"{self.base_url}/{str(endpoint).lstrip('/')}"
+        try:
+            r = requests.post(url, json=payload, headers={"Content-Type": "application/json"})
+            r.raise_for_status()
+        except requests.HTTPError as e:
+            # 打印返回体，帮助调试 400 错误（如字段无效、值过大、重复注册）
+            print(f"[HTTP {r.status_code}] POST {url}")
+            print(f"Request payload: {json.dumps(payload, indent=2)}")
+            print(f"Response text: {r.text}")
+            raise
         return r.json() if r.text else {}
+
 
     def _health_check(self):
         """
@@ -84,7 +103,7 @@ class SteelSeriesLighting:
         except requests.RequestException:
             return False
 
-    def register_game(self, display_name="My Python App", developer="Me"):
+    def register_game(self, display_name="My Python App", developer="Me",deinitialize_timer_length_ms: int | None = None):
         """
         注册应用（告诉 GG 有一个新应用接入）
 
@@ -98,6 +117,8 @@ class SteelSeriesLighting:
             "developer": developer,
             "deinitialize_timer_length_ms": 10000
         }
+        if deinitialize_timer_length_ms is not None:
+            payload["deinitialize_timer_length_ms"] = int(deinitialize_timer_length_ms)
         return self._post("game_metadata", payload)
 
     def register_event(self, event, min_value=0, max_value=1, icon_id=1):
@@ -236,21 +257,37 @@ class SteelSeriesLighting:
 
     def lights_off(self):
         """
-        熄灭所有键（恢复黑色）
+        熄灭所有键（无闪烁版）：只触发已预绑定的全黑事件
         """
+        # 确保已完成一次性预绑定（容错）
+        self._ensure_all_off_event()
+        # 仅触发事件，不再重新 bind
+        self._post("game_event", {"game": self.game, "event": self.ALL_OFF_EVENT, "data": {"value": 1}})
+        print("[INFO] All keys lights off (no-flash)")
+
+    
+    def remove_game(self):
+        return self._post("remove_game", {"game": self.game})
+    
+    def _ensure_all_off_event(self):
+        """只在第一次把 ALL_OFF_EVENT 绑定到全键黑色，后续仅触发 event 即可"""
+        if self.ALL_OFF_EVENT in self._bound_events:
+            return
+        # 注册事件
+        self.register_event(self.ALL_OFF_EVENT)
+        # 绑定全键黑色
         payload = {
             "game": self.game,
-            "event": "CLEAR_ALL",
-            "handlers": [
-                {
-                    "device-type": "keyboard",
-                    "zone": "all",
-                    "mode": "color",
-                    "color": {"red": 0, "green": 0, "blue": 0}
-                }
-            ]
+            "event": self.ALL_OFF_EVENT,
+            "handlers": [{
+                "device-type": "keyboard",
+                "zone": "all",
+                "mode": "color",
+                "color": {"red": 0, "green": 0, "blue": 0}
+            }]
         }
         self._post("bind_game_event", payload)
-        self._post("game_event", {"game": self.game, "event": "CLEAR_ALL", "data": {"value": 1}})
-        print("[INFO] All keys lights off")
+        self._bound_events.add(self.ALL_OFF_EVENT)
+
+
 
