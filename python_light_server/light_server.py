@@ -13,10 +13,14 @@ app = Flask(__name__)
 # Enable CORS so frontend (React) can call backend
 CORS(app)
 
-# Initialize SteelSeriesLighting object for keyboard control
 lighting = SteelSeriesLighting(game="MYAPP")
-# Register the game with SteelSeries GG
-lighting.register_game("Python Test", "Me")
+try:
+    lighting.remove_game()  # 如果之前没注册过，会返回错误但不影响
+except Exception:
+    pass
+lighting.register_game("Python Test", "Me", deinitialize_timer_length_ms=60000)  # 60秒先验证
+
+
 
 # Pre-bind all letter keys (A-Z) with unique event names to avoid flashing on first use
 # This ensures each letter key is ready to light instantly when requested
