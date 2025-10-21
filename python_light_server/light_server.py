@@ -28,14 +28,6 @@ for letter in string.ascii_lowercase:
     except Exception as e:
         print(f"Failed to pre-bind {letter}: {e}")
 
-# Add a startup initializer to ensure all lights are off when the server starts
-def initialize_lighting():
-    try:
-        lighting.lights_off()
-        print("Initialized lighting: all keys turned off.")
-    except Exception as e:
-        print(f"Failed to initialize lighting during startup: {e}")
-
 # Endpoint to light a single letter key
 @app.route("/lights_on_key", methods=["POST"])
 def lights_on_key():
@@ -54,21 +46,6 @@ def lights_on_key():
             return jsonify({"error": str(e)}), 500
     else:
         return jsonify({"error": "No valid letter key provided"}), 400
-
-# Endpoint to light a specific key region
-@app.route("/lights_on_region", methods=["POST"])
-def lights_on_region():
-    data = request.json
-    event = data.get("event", "REGION_EVENT")
-    key = data.get("key")
-    color = data.get("color", "#FFFFFF")
-    duration = data.get("duration", 1)
-
-    if not key:
-        return jsonify({"error": "Missing key"}), 400
-
-    lighting.lights_on_region(event, key, color, duration=duration)
-    return jsonify({"status": f"Region for key {key} lights on with {color}"})
 
 # Endpoint to turn off all keyboard lights
 @app.route("/lights_off", methods=["POST"])
@@ -97,5 +74,4 @@ def run_test():
 
 # Run the Flask app on port 5050
 if __name__ == "__main__":
-    initialize_lighting()
     app.run(port=5050)
