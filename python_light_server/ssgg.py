@@ -2,6 +2,8 @@ import json
 import os
 import time
 import requests
+import threading
+from typing import Optional
 
 
 class SteelSeriesLighting:
@@ -59,6 +61,8 @@ class SteelSeriesLighting:
 
             print(f"[INFO] Connected to SteelSeries GG at {self.base_url} (coreProps: {core_props_resolved})")
             self._bound_events = set()   # 事件/按键 绑定缓存
+            # event -> (thread, stop_event)
+            self._event_threads = {}
             self._ensure_all_off_event()
 
 
@@ -103,7 +107,7 @@ class SteelSeriesLighting:
         except requests.RequestException:
             return False
 
-    def register_game(self, display_name="My Python App", developer="Me",deinitialize_timer_length_ms: int | None = None):
+    def register_game(self, display_name="My Python App", developer="Me", deinitialize_timer_length_ms: Optional[int] = None):
         """
         注册应用（告诉 GG 有一个新应用接入）
 
@@ -193,18 +197,15 @@ class SteelSeriesLighting:
 
     def lights_on_key(self, event, key, hex_color="#FFFFFF", interval=1, duration=3600):
         """
-        一键点亮并保持按键持续亮着（通过定时刷新）
-        结束后自动关闭该键
+        一键点亮并保持按键持续亮着（通过后台线程刷新）。
+        如果 duration 为 None -> 无限刷新直到调用 lights_off()。
+        返回前不会阻塞主线程。
         """
         self.ensure_key_bound(event, key, hex_color)
-        # 循环刷新，保持亮灯
-        start = time.time()
-        while time.time() - start < duration:
-            self.set_event_value(event, 1)
-            print(f"[INFO] Key '{key.upper()}' refreshed, keeping light alive...")
-            time.sleep(interval)
-        print(f"[INFO] Key '{key.upper()}' lights_on finished after {duration} seconds")
-        self.set_event_value(event, 0)   # 只关闭该键
+        # ensure any existing refresher for this event is stopped
+        self._stop_event_refresher(event)
+        # start background refresher
+        self._start_event_refresher(event, interval=interval, duration=duration)
 
     def lights_on_region(self, event, key, hex_color="#FFFFFF", interval=1, duration=3600):
         """
@@ -243,29 +244,26 @@ class SteelSeriesLighting:
         }
         self._post("bind_game_event", payload)
 
-        # 循环保持点亮
-        start = time.time()
-        while time.time() - start < duration:
-            self.set_event_value(event, 1)
-            print(f"[INFO] Region ({''.join(region).upper()}) refreshed, keeping light alive...")
-            time.sleep(interval)
-
-        print(f"[INFO] Region ({''.join(region).upper()}) lights_on finished after {duration} seconds")
-        self.lights_off()   # 自动熄灭
-
-
+        # start background refresher for region (non-blocking)
+        # stop any existing refresher for this event first
+        self._stop_event_refresher(event)
+        # when duration is provided the refresher will stop after duration; if None, it runs until lights_off()
+        self._start_event_refresher(event, interval=interval, duration=duration, on_finish=(self.lights_off if duration is not None else None))
 
     def lights_off(self):
         """
         熄灭所有键（无闪烁版）：只触发已预绑定的全黑事件
         """
-        # 确保已完成一次性预绑定（容错）
+        # 确保已完成一次性预绑定（容错)
         self._ensure_all_off_event()
+        # stop all background refreshers first
+        for event in list(self._event_threads.keys()):
+            self._stop_event_refresher(event)
         # 仅触发事件，不再重新 bind
         self._post("game_event", {"game": self.game, "event": self.ALL_OFF_EVENT, "data": {"value": 1}})
         print("[INFO] All keys lights off (no-flash)")
 
-    
+
     def remove_game(self):
         return self._post("remove_game", {"game": self.game})
     
@@ -288,6 +286,51 @@ class SteelSeriesLighting:
         }
         self._post("bind_game_event", payload)
         self._bound_events.add(self.ALL_OFF_EVENT)
+
+    def _start_event_refresher(self, event, interval=1, duration=None, on_finish=None):
+        """Start a background thread that repeatedly sets event value to 1.
+        If duration is None, it runs until _stop_event_refresher is called.
+        on_finish (callable) is invoked after the refresher exits (if provided).
+        """
+        stop_evt = threading.Event()
+
+        def worker():
+            start = time.time()
+            try:
+                while not stop_evt.is_set():
+                    self.set_event_value(event, 1)
+                    # debug log
+                    print(f"[INFO] Event '{event}' refreshed, keeping light alive...")
+                    # check duration
+                    if duration is not None and (time.time() - start) >= duration:
+                        break
+                    time.sleep(interval)
+            finally:
+                # if duration was specified we should turn off the event
+                if duration is not None:
+                    try:
+                        self.set_event_value(event, 0)
+                    except Exception:
+                        pass
+                if callable(on_finish):
+                    try:
+                        on_finish()
+                    except Exception:
+                        pass
+
+        t = threading.Thread(target=worker, daemon=True)
+        self._event_threads[event] = (t, stop_evt)
+        t.start()
+
+    def _stop_event_refresher(self, event):
+        """Stop and remove the background refresher for `event` if present."""
+        entry = self._event_threads.pop(event, None)
+        if not entry:
+            return
+        t, stop_evt = entry
+        stop_evt.set()
+        # give thread a short time to exit
+        t.join(timeout=2)
 
 
 

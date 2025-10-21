@@ -54,7 +54,7 @@ function Display() {
         body: JSON.stringify({
           event: "REGION_EVENT",
           key: letter,
-          color: "#ffffff"
+          color: "#ffffff",
           // no duration: keep lit until explicitly turned off
         })
       }).catch(err => console.error("Error lighting region:", err));
