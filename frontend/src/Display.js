@@ -7,6 +7,9 @@ function Display() {
   const [currentLetterIndex, setCurrentLetterIndex] = useState(0); //state for the index of the current letter the user should type
   const [sectionCompleted, setSectionCompleted] = useState(false); //state to track if the current section is completed
   const [fontSize, setFontSize] = useState(120);
+  const [lightingMode, setLightingMode] = useState("individual"); // "individual" or "region"
+  
+  
   
   //state for all content sections (array of strings)
   const [contentSections, setContentSections] = useState(() => {
@@ -31,17 +34,31 @@ function Display() {
   function updateCurrentLetterLighting(letter) {
     if (!letter) return;
 
-    // Send POST request to backend to light the key
-    fetch("http://localhost:5050/lights_on_key", {
+    // Branch based on selected lighting mode
+    if (lightingMode === "individual") {
+      // Send POST request to light a single key
+      fetch("http://localhost:5050/lights_on_key", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           key: letter,
-          color: "#ffffff", //just white for now, can change this later
-          duration: 2 //duration of 2 seconds for now, can change this later
+          color: "#ffffff"
+          // no duration: keep lit until explicitly turned off
         })
-      })
-      .catch(err => console.error("Error lighting key:", err));
+      }).catch(err => console.error("Error lighting key:", err));
+    } else {
+      // Region mode: send the letter directly; backend/ssgg will map it if needed
+      fetch("http://localhost:5050/lights_on_region", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          event: "REGION_EVENT",
+          key: letter,
+          color: "#ffffff"
+          // no duration: keep lit until explicitly turned off
+        })
+      }).catch(err => console.error("Error lighting region:", err));
+    }
   }
 
   // useEffect to update section and light first letter when section changes
@@ -56,7 +73,11 @@ function Display() {
       // Light up first letter of new section
       if (section.length > 0) {
         const firstLetter = section[0];
-        updateCurrentLetterLighting(firstLetter);
+
+        // Ensure any previous lights are off, then light the first letter so it remains until pressed
+        fetch('http://localhost:5050/lights_off', { method: 'POST' })
+          .then(() => updateCurrentLetterLighting(firstLetter))
+          .catch(() => updateCurrentLetterLighting(firstLetter));
       }
     }
   }, [contentSections, currentIndex]);
@@ -105,10 +126,18 @@ useEffect(() => {
       const nextIndex = currentLetterIndex + 1;
       setCurrentLetterIndex(nextIndex);
       updateProgressBar(nextIndex, currentSection.length);
+      
+
+      // Do not turn all lights off here. Each key/region call uses a duration
+      // so the backend/ssgg will turn it off after the duration elapses.
+      // Removing the global lights_off prevents turning off the next letter immediately.
 
       if (nextIndex < currentSection.length) {
         const nextLetter = currentSection[nextIndex];
-        updateCurrentLetterLighting(nextLetter);
+        // Turn off previous lights, then light the next letter so it stays lit until pressed
+        fetch('http://localhost:5050/lights_off', { method: 'POST' })
+          .then(() => updateCurrentLetterLighting(nextLetter))
+          .catch(() => updateCurrentLetterLighting(nextLetter));
       } else {
         setSectionCompleted(true);
       }
@@ -198,6 +227,28 @@ useEffect(() => {
           style={{ verticalAlign: "middle" }}
         />
         <span style={{ marginLeft: "1em", fontWeight: "bold", color: "#fff" }}>{fontSize}px</span>
+      </div>
+
+      {/* Lighting mode selector (individual key vs region) */}
+      <div style={{ marginBottom: "1em", textAlign: "center" }}>
+        <label style={{ color: "#fff", marginRight: "1em" }}>
+          <input
+            type="radio"
+            name="lightingMode"
+            checked={lightingMode === "individual"}
+            onChange={() => setLightingMode("individual")}
+          />
+          {' '}Individual key
+        </label>
+        <label style={{ color: "#fff", marginLeft: "1em" }}>
+          <input
+            type="radio"
+            name="lightingMode"
+            checked={lightingMode === "region"}
+            onChange={() => setLightingMode("region")}
+          />
+          {' '}Region
+        </label>
       </div>
 
       {/* Section progress bar in top left */}
