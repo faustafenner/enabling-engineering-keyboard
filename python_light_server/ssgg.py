@@ -12,34 +12,21 @@ class SteelSeriesLighting:
         "region3": list("ujmikolp")
     }
 
-    ALL_OFF_EVENT = "__ALL_OFF__"
-
     def __init__(self, game="MYAPP", core_props_path=None, retry_interval=5):
-            """
-            初始化 SteelSeries Lighting 控制器
+        """
+        初始化 SteelSeries Lighting 控制器
 
-            :param game: 游戏/应用标识符（字符串，必须唯一，例如 "MYAPP"）
-            :param core_props_path: coreProps.json 的路径（优先使用此值；若为空将自动探测）
-            :param retry_interval: SteelSeries GG 未启动时的重试间隔（秒）
-            """
-            # 1) 优先顺序：显式参数 > 环境变量 > 常见系统路径（GG/Engine 新旧版本）
-            candidates = [
-                core_props_path,
-                os.getenv("STEELSERIES_COREPROPS"),
-                r"C:\ProgramData\SteelSeries\SteelSeries Engine 3\coreProps.json",  # Windows (Engine 3)
-                r"C:\ProgramData\SteelSeries\SteelSeries GG\coreProps.json",       # Windows (GG)
-                "/Library/Application Support/SteelSeries Engine 3/coreProps.json", # macOS (Engine 3)
-                "/Library/Application Support/SteelSeries GG/coreProps.json",       # macOS (GG)
-                os.path.expanduser("~/.local/share/SteelSeries Engine 3/coreProps.json"),  # Linux (旧)
-                os.path.expanduser("~/.local/share/SteelSeries GG/coreProps.json"),        # Linux (GG)
-            ]
+        :param game: 游戏/应用标识符（字符串，必须唯一，例如 "MYAPP"）
+        :param core_props_path: coreProps.json 的路径（默认安装位置）
+        :param retry_interval: SteelSeries GG 未启动时的重试间隔（秒）
+        """
+        # 默认路径：SteelSeries Engine 在 Windows 的安装目录
+        if core_props_path is None:
+            core_props_path = r'/Library/Application Support/SteelSeries Engine 3/coreProps.json'
 
-            core_props_resolved = next((p for p in candidates if p and os.path.exists(p)), None)
-            if not core_props_resolved:
-                raise FileNotFoundError(
-                    "coreProps.json not found. Ensure SteelSeries GG (Engine) is running.\n"
-                    "Tip: set env STEELSERIES_COREPROPS to the file path, or pass core_props_path explicitly."
-                )
+        # 检查配置文件是否存在
+        if not os.path.exists(core_props_path):
+            raise FileNotFoundError(f"coreProps.json not found at {core_props_path}")
 
             # 2) 读取 API 地址与端口
             with open(core_props_resolved, "r", encoding="utf-8") as f:
