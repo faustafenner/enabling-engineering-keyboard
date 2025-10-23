@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Input from './Input';
 import Display from './Display';
 import Success from './Success';
+import Stats from './Stats';
 
 function App() {
   useEffect(() => {
@@ -15,6 +16,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Input />} />
         <Route path="/display" element={<Display />} />
+        <Route path="/stats" element={<Stats />} />
         <Route path="/success" element={<Success />} />
       </Routes>
     </BrowserRouter>

@@ -108,7 +108,12 @@ function Input() {
   return (
     <div>
       <div className="container">
-        <h1>Setup Wizard</h1>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <h1>Setup Wizard</h1>
+          <div>
+            <button onClick={() => navigate('/stats')} style={{ marginLeft: 8 }}>Stats</button>
+          </div>
+        </div>
         <div className="instructions">
           <p>
             <strong>Instructions:</strong> Enter content in the input area

@@ -7,7 +7,27 @@ function Display() {
   const [currentLetterIndex, setCurrentLetterIndex] = useState(0); //state for the index of the current letter the user should type
   const [sectionCompleted, setSectionCompleted] = useState(false); //state to track if the current section is completed
   const [fontSize, setFontSize] = useState(120);
+  // Effective font size (may be reduced automatically to fit long words)
+  const [effectiveFontSize, setEffectiveFontSize] = useState(fontSize);
+  // Timing tracking: intervals (ms) between consecutive correct key presses
+  const [intervals, setIntervals] = useState(() => {
+    try {
+      const saved = localStorage.getItem('intervals');
+      return saved ? JSON.parse(saved) : [];
+    } catch (e) { return []; }
+  });
+  const prevPressTimeRef = useRef(null);
+  // per-letter stats persisted in localStorage so a refresh does NOT clear them
+  const [perLetterStats, setPerLetterStats] = useState(() => {
+    try {
+      const saved = localStorage.getItem('perLetterStats');
+      return saved ? JSON.parse(saved) : {};
+    } catch (e) { return {}; }
+  });
   const [lightingMode, setLightingMode] = useState("individual"); // "individual" or "region"
+  // Settings modal state
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [testKey, setTestKey] = useState('');
   
   
   
@@ -27,8 +47,46 @@ function Display() {
   const progressFillRef = useRef(null);
   // React Router navigation hook
   const navigate = useNavigate();
+  const wordContainerRef = useRef(null);
+  const [viewportWidth, setViewportWidth] = useState(window.innerWidth);
 
+  // Recompute effective font size when currentSection, fontSize, or viewport changes
+  useEffect(() => {
+    function compute() {
+      const container = wordContainerRef.current;
+      if (!container || !currentSection) {
+        setEffectiveFontSize(fontSize);
+        return;
+      }
+      const containerWidth = container.clientWidth - 8; // small padding
+      // longest continuous word (no spaces)
+      const words = currentSection.split(/\s+/).filter(Boolean);
+      const longest = words.length > 0 ? Math.max(...words.map(w => w.length)) : currentSection.length;
 
+      // Estimate per-character box width based on how we render boxes:
+      // minWidth = f*0.65, horizontal padding = f*0.22, margin each side = f*0.08
+      const estimateCharBox = (f) => f * (0.65 + 0.22 * 2 + 0.08 * 2); // = f * (0.65+0.44+0.16)=f*1.25
+
+      const reqWidth = longest * estimateCharBox(fontSize);
+      if (reqWidth <= containerWidth) {
+        setEffectiveFontSize(fontSize);
+      } else {
+        const scale = containerWidth / reqWidth;
+        const newSize = Math.max(24, Math.floor(fontSize * scale));
+        setEffectiveFontSize(newSize);
+      }
+    }
+
+    compute();
+  }, [currentSection, fontSize, viewportWidth]);
+
+  useEffect(() => {
+    function onResize() {
+      setViewportWidth(window.innerWidth);
+    }
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
 
   // Function to light up the current letter key on the keyboard
   function updateCurrentLetterLighting(letter) {
@@ -123,6 +181,28 @@ useEffect(() => {
     }
 
     if (key === currentSection[currentLetterIndex]) {
+      // Timing: record interval between this correct press and the previous correct press
+      const now = performance.now();
+      const letterKey = key.toLowerCase();
+      if (prevPressTimeRef.current !== null) {
+        const delta = now - prevPressTimeRef.current; // ms
+        // append to intervals and keep last 100 entries to avoid unbounded growth
+        const next = [...intervals.slice(-99), delta];
+        setIntervals(next);
+        try { localStorage.setItem('intervals', JSON.stringify(next)); } catch (e) {}
+
+        // Update per-letter stats: add delta to that letter's array (in-memory only)
+        setPerLetterStats(prev => {
+          const copy = { ...prev };
+          if (!copy[letterKey]) copy[letterKey] = [];
+          copy[letterKey] = [...copy[letterKey].slice(-499), delta]; // keep last 500 per letter
+          try { localStorage.setItem('perLetterStats', JSON.stringify(copy)); } catch (e) {}
+          return copy;
+        });
+      }
+      prevPressTimeRef.current = now;
+      
+
       const nextIndex = currentLetterIndex + 1;
       setCurrentLetterIndex(nextIndex);
       updateProgressBar(nextIndex, currentSection.length);
@@ -146,7 +226,7 @@ useEffect(() => {
 
   window.addEventListener("keydown", handleKeyPress);
   return () => window.removeEventListener("keydown", handleKeyPress);
-}, [currentSection, currentLetterIndex, sectionCompleted]);
+}, [currentSection, currentLetterIndex, sectionCompleted, intervals]);
 
 // function handleKeyPress(e) {
 //   if (!currentSection || sectionCompleted) return;
@@ -214,42 +294,8 @@ useEffect(() => {
 
   return (
     <div>
-      {/* Font size slider at top */}
-      <div style={{ marginBottom: "1em", textAlign: "center" }}>
-        <label htmlFor="fontSizeSlider" style={{ marginRight: "1em", color: "#fff" }}>Font Size:</label>
-        <input
-          id="fontSizeSlider"
-          type="range"
-          min={100}
-          max={200}
-          value={fontSize}
-          onChange={e => setFontSize(Number(e.target.value))}
-          style={{ verticalAlign: "middle" }}
-        />
-        <span style={{ marginLeft: "1em", fontWeight: "bold", color: "#fff" }}>{fontSize}px</span>
-      </div>
-
-      {/* Lighting mode selector (individual key vs region) */}
-      <div style={{ marginBottom: "1em", textAlign: "center" }}>
-        <label style={{ color: "#fff", marginRight: "1em" }}>
-          <input
-            type="radio"
-            name="lightingMode"
-            checked={lightingMode === "individual"}
-            onChange={() => setLightingMode("individual")}
-          />
-          {' '}Individual key
-        </label>
-        <label style={{ color: "#fff", marginLeft: "1em" }}>
-          <input
-            type="radio"
-            name="lightingMode"
-            checked={lightingMode === "region"}
-            onChange={() => setLightingMode("region")}
-          />
-          {' '}Region
-        </label>
-      </div>
+      {/* Settings button (top-right) */}
+      <button className="settings-top-btn" onClick={() => setSettingsOpen(true)}>Settings</button>
 
       {/* Section progress bar in top left */}
       <div className="section-progress-container">
@@ -268,7 +314,7 @@ useEffect(() => {
         <div className="instructions">
           <p><strong>Instructions:</strong> Type the highlighted letter in the input box below. The content will update as you type.</p>
         </div> */}
-        <div id="wordContainer">
+        <div id="wordContainer" ref={wordContainerRef}>
           {/* Display the current section, highlighting the current and correct letters */}
           {currentSection ? (
             <p>
@@ -277,10 +323,10 @@ useEffect(() => {
   const isCurrent = idx === currentLetterIndex;
   const isCorrect = idx < currentLetterIndex;
   const boxStyle = {
-    minWidth: fontSize * 0.65 + "px", // width similar to a letter
-    padding: fontSize * 0.18 + "px " + fontSize * 0.22 + "px",
-    margin: fontSize * 0.08 + "px",
-    borderRadius: fontSize * 0.25 + "px",
+    minWidth: effectiveFontSize * 0.65 + "px", // width similar to a letter
+    padding: effectiveFontSize * 0.18 + "px " + effectiveFontSize * 0.22 + "px",
+    margin: effectiveFontSize * 0.08 + "px",
+    borderRadius: effectiveFontSize * 0.25 + "px",
     display: "inline-block",
     backgroundColor: isCorrect
       ? "#28a745"
@@ -288,12 +334,12 @@ useEffect(() => {
       ? "#ff9800"
       : "#181818",
     color: "#ffffff",
-    fontSize: fontSize + "px",
+    fontSize: effectiveFontSize + "px",
     fontFamily: 'Mulish, Courier New, monospace, Arial, sans-serif',
     fontWeight: isCurrent ? "bold" : "normal",
     textAlign: "center",
     verticalAlign: "middle",
-    lineHeight: fontSize + "px",
+    lineHeight: effectiveFontSize + "px",
     boxSizing: "border-box"
   };
   return (
@@ -332,12 +378,43 @@ useEffect(() => {
             </button>
           )}
         </div>
-        {/* Quit button fixed at bottom left */}
-        <button className="quit-btn" onClick={goBack}>Quit</button>
-        
-      </div>
-    </div>
-  );
-}
+        <div className="fixed-action-container">
+          <button className="quit-btn" onClick={goBack}>Quit</button>
+          {/* <button className="stats-btn" onClick={() => navigate('/stats', { state: { perLetterStats } })}>Stats</button> */}
+        </div>
+         
+       </div>
 
-export default Display;
+      {/* Settings modal */}
+      {settingsOpen && (
+        <div className="modal-overlay" onClick={() => setSettingsOpen(false)}>
+          <div className="modal-panel" onClick={e => e.stopPropagation()}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <h3>Settings</h3>
+            </div>
+            <div style={{ marginTop: 12 }}>
+              <label style={{ display: 'block', color: '#fff', marginBottom: 6 }}>Font Size: {fontSize}px</label>
+              <input type="range" min={120} max={220} value={fontSize} onChange={e => setFontSize(Number(e.target.value))} />
+            </div>
+            <div style={{ marginTop: 12 }}>
+              <label style={{ color: '#fff' }}>Lighting Mode:</label>
+              <div>
+                <label style={{ color: '#fff', marginRight: 8 }}>
+                  <input type="radio" name="lightingModeModal" checked={lightingMode === 'individual'} onChange={() => setLightingMode('individual')} /> Individual
+                </label>
+                <label style={{ color: '#fff' }}>
+                  <input type="radio" name="lightingModeModal" checked={lightingMode === 'region'} onChange={() => setLightingMode('region')} /> Region
+                </label>
+              </div>
+            </div>
+            <div style={{ marginTop: 12 }}>
+              <button onClick={() => setSettingsOpen(false)}>Close</button>
+            </div>
+          </div>
+        </div>
+      )}
+     </div>
+   );
+ }
+
+ export default Display;
