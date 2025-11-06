@@ -1,6 +1,36 @@
 Instruction for opening the project:
-1. Download the file and copy the path of the file.
-2. Open the terminal.
-3. Use cd the_conent_just_copy to change the directory to the file.
-5. For Mac users, run chmod +x start.sh first, then run ./start.sh.
-For Windows users, double click start.bat to run the project.
+1. Download the file and unzil it.
+
+2. Locate and copy the folder path.
+On Windows
+Open the folder in File Explorer.
+Click the address bar (top area showing the folder location).
+
+On Mac
+Open Finder and locate the folder.
+Right-click on the folder while holding the Option key.
+Click Copy “foldername” as Pathname.
+
+3.Open the Terminal (Mac) or Command Window (Windows)
+On Windows:
+Press Windows Key, type cmd, and press Enter
+(this opens Command Prompt).
+
+On Mac:
+Press Command + Space, type Terminal, press Enter.
+
+4. Type cd then paste the folder path after it, then press Enter.
+
+5. Run the project
+Mac Users:
+In Terminal, type:
+chmod +x start.sh
+(Press Enter. This gives permission to run the file.)
+Then run the project:
+./start.sh
+
+Windows Users:
+Just double-click start.bat
+(or right-click → Run if it doesn't open)
+
+The project will launch automatically.
