@@ -1,5 +1,5 @@
 Instruction for opening the project:
-1. Download the file and unzil it.
+1. Download the file and unziP it.
 
 2. Locate and copy the folder path.
 On Windows
