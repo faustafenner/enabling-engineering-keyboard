@@ -37,6 +37,11 @@ if [ "$SYSTEM" = "macOS" ]; then
             echo "Visit https://brew.sh/ for installation guide"
             exit 1
         fi
+        
+        # Configure Homebrew in current session
+        echo "Configuring Homebrew in current session..."
+        eval "$(/opt/homebrew/bin/brew shellenv)"
+        echo "✓ Homebrew configured successfully"
     else
         echo "✓ Homebrew already installed"
     fi
