@@ -17,6 +17,8 @@
     "start": "npm start --prefix frontend",
     "build": "npm run build --prefix frontend",
     "electron": "electron .",
-    "electron-dev": "concurrently \"npm start --prefix frontend\" \"npm run electron\""
+    "electron-dev": "concurrently \"npm start --prefix frontend\" \"npm run electron\"",
+    "backend": "cd python_light_server && python3 light_server.py",
+    "dev": "concurrently \"npm run backend\" \"npm start --prefix frontend\""
   }
 }

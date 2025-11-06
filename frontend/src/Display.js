@@ -82,6 +82,11 @@ function Display() {
       if (!currentSection || sectionCompleted) return;
       if (e.key.length !== 1) return;
 
+      // 阻止空格键导致的页面滚动
+      if (e.key === " ") {
+        e.preventDefault();
+      }
+
       if (e.key === currentSection[currentLetterIndex]) {
         const next = currentLetterIndex + 1;
         setCurrentLetterIndex(next);
