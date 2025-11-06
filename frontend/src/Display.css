@@ -3,42 +3,88 @@
 body {
   font-family: "Mulish", Arial, sans-serif;
   margin: 0;
-  padding: 20px;
+  padding: 0;
   background-color: #1e1e1e;
 }
 
-.container {
-  max-width: 1400px;
-  margin: 0 auto;
+.display-wrapper {
+  width: 1600px;        
+  max-width: 1600px;   
+  margin: 0 auto;      
   background-color: #1e1e1e;
   border-radius: 8px;
   padding: 20px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   min-height: 500px;
   margin-top: 80px;
+  box-sizing: border-box;
+  justify-content: center;  
 }
 
-h2 {
-  color: #555;
-  border-bottom: 2px solid #eee;
-  padding-bottom: 10px;
+
+/* ---------------- Word Display Box ---------------- */
+
+#wordContainer {
+  font-size: 48px;
+  font-family: "Mulish", "Courier New", monospace, Arial, sans-serif;
+  text-align: center;
+  margin: 20px auto;
+  min-height: 300px;
+  padding: 20px;
+  background-color: #0f0f0f;
+  border-radius: 15px;
+  width: 80%;
+  max-width: 1400px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+  border: 2px solid #333;
+  position: relative;
+  word-break: break-word;
+  white-space: normal;
+  line-height: 1.5;
 }
 
-/* button {
-  background-color: #4caf50;
-  color: white;
-  padding: 20px 20px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 24px;
-  margin-top: 10px;
+#wordContainer p {
+  margin: 0;
+  padding: 0;
   width: 100%;
-} */
-
-button:hover {
-  background-color: #45a049;
+  display: block;
+  word-break: keep-all;
+  white-space: normal;
 }
+
+#wordContainer span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 12px;
+  margin: 10px;
+  min-width: 100px;
+  border-radius: 30px;
+  background-color: #181818;
+  color: #ffffff;
+  font-family: "Mulish", "Courier New", monospace, Arial, sans-serif;
+  transition: background 0.2s, color 0.2s, transform 0.2s;
+  word-break: keep-all;
+  white-space: nowrap;
+}
+#wordContainer .current {
+  background-color: #ff9800; /* orange for current letter */
+  color: #ffffff;
+  text-decoration: none;
+  font-weight: bold;
+  transform: none;
+}
+#wordContainer .correct {
+  background-color: #28a745; /* green rectangle for correct/typed letter */
+  color: #ffffff; /* keep text black */
+  font-weight: 500;
+}
+
+/* ---------------- Buttons ---------------- */
 
 .next-section-btn {
   background-color: #4caf50;
@@ -54,71 +100,12 @@ button:hover {
   width: 100%;
 }
 
-.button-group {
-  display: flex;
-  gap: 10px;
+.next-section-btn:hover {
+  background-color: #45a049;
 }
 
-.button-group button {
-  flex: 1;
-}
-
-#wordContainer {
-  font-size: 48px;
-  font-family: "Mulish", "Courier New", monospace, Arial, sans-serif;
-  text-align: center;
-  margin: 30px 0;
-  min-height: 100px;
-  padding: 20px;
-  background-color: #0f0f0f;
-  border-radius: 15px;
-  margin: 20px auto;
-  min-height: 300px;
-  width: 80%;
-  max-width: 1200px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-wrap: wrap;
-  box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
-  border: 2px solid #333;
-  position: relative;
-}
-
-/* Canvas Firework will handle all animations and rendering */
-/* No CSS animations needed as we're using JavaScript + Canvas API */
-
-#wordContainer span {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 10px 12px;
-  margin: 10px;
-  min-width: 100px;
-  max-width:300px;
-  border-radius: 30px;
-  background-color: #181818;
-  color: #ffffff;
-  font-family: "Mulish", "Courier New", monospace, Arial, sans-serif;
-  transition: background 0.2s, color 0.2s, transform 0.2s;
-}
-
-#wordContainer .current {
-  background-color: #ff9800; /* orange for current letter */
-  color: #ffffff;
-  text-decoration: none;
-  font-weight: bold;
-  transform: none;
-}
-
-#wordContainer .correct {
-  background-color: #28a745; /* green rectangle for correct/typed letter */
-  color: #ffffff; /* keep text black */
-  font-weight: 500;
-}
-
+/* Quit button stays fixed in new UI */
 .quit-btn {
-  /* placed inside a fixed container in the markup; keep styling but remove absolute positioning */
   width: 112px;
   height: 44px;
   background-color: #f44336;
@@ -131,30 +118,14 @@ button:hover {
   align-items: center;
   justify-content: center;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+  cursor: pointer;
 }
 
 .quit-btn:hover {
   background-color: #d32f2f;
 }
 
-.stats-btn {
-  width: 112px;
-  height: 44px;
-  background-color: #4caf50;
-  color: white;
-  border: none;
-  border-radius: 22px;
-  font-size: 18px;
-  font-weight: 700;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
-}
-
-.stats-btn:hover {
-  background-color: #45a049;
-}
+/* ---------------- Progress Bar ---------------- */
 
 .section-progress-container {
   position: fixed;
@@ -192,15 +163,7 @@ button:hover {
   margin-left: 2px;
 }
 
-.fixed-action-container {
-  position: fixed;
-  left: 24px;
-  bottom: 24px;
-  display: flex;
-  gap: 12px;
-  align-items: center;
-  z-index: 1200;
-}
+/* ---------------- Settings Modal & Button ---------------- */
 
 .settings-top-btn {
   position: fixed;
@@ -218,13 +181,18 @@ button:hover {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+}
+
+.settings-top-btn:hover {
+  background-color: #1976d2;
 }
 
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.6);
+  background: rgba(0, 0, 0, 0.6);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -237,15 +205,31 @@ button:hover {
   border-radius: 10px;
   width: 380px;
   max-width: calc(100% - 32px);
-  box-shadow: 0 6px 24px rgba(0,0,0,0.6);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.6);
 }
 
-.modal-panel h3 { color: #fff; margin: 0; }
+.modal-panel h3 {
+  color: #fff;
+  margin: 0;
+}
 
-.modal-panel button { padding: 6px 10px; }
+.modal-panel button {
+  padding: 6px 10px;
+}
+
+/* ---------------- Mobile ---------------- */
 
 @media (max-width: 480px) {
-  .fixed-action-container { left: 12px; bottom: 12px; gap: 8px; }
-  .quit-btn, .stats-btn { width: 92px; height: 40px; font-size: 16px; font-weight: 700; }
-  .settings-top-btn { right: 12px; top: 12px; width: 92px; height: 40px; font-size: 16px; }
+  .quit-btn {
+    width: 92px;
+    height: 40px;
+    font-size: 16px;
+  }
+  .settings-top-btn {
+    right: 12px;
+    top: 12px;
+    width: 92px;
+    height: 40px;
+    font-size: 16px;
+  }
 }
