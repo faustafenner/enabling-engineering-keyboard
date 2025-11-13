@@ -1,9 +1,12 @@
-body,
-button,
-input,
-textarea,
-h1,
-h2,
+@import url("https://fonts.googleapis.com/css2?family=Mulish:wght@300;400;600&display=swap");
+
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 20px;
+  background-color: #2a2a2a;
+  color: #ffffff;
+}
 h3,
 h4,
 h5,
@@ -19,6 +22,7 @@ label,
 body {
   font-family: Arial, sans-serif;
   margin: 0;
+  padding: 20px;
   background-color: #f5f5f5;
 }
 
@@ -47,7 +51,7 @@ body {
 .container {
   max-width: 800px;
   margin: 0 auto;
-  background-color: #1e1e1e;
+  background-color: #000000;
   border-radius: 8px;
   padding: 20px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
@@ -59,6 +63,7 @@ h1 {
   color: #ffffff;
   text-align: center;
   margin-top: 0;
+  font-weight: 100; /* make h1 non-bold */
 }
 
 h2 {
@@ -71,12 +76,14 @@ h2 {
   width: 97.5%;
   height: 200px;
   padding: 10px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
+  border-radius: 20px;
   resize: vertical;
   font-size: 16px;
   display: block;
-  margin: 0 auto;
+  margin: 20px auto;
+  background-color: #ffffff;
+  color: #000000;
+  border: 1px solid #333333;
 }
 
 button {
@@ -87,18 +94,41 @@ button {
   border: none;
   border-radius: 50px;
   cursor: pointer;
-  font-size: 36px;
+  font-size: 30px;
   margin-top: 20px;
   margin: 20px;
-  width: 100%;
 }
 
-button:hover {
-  background-color: #45a049;
+.start-btn {
+  background-color: #4caf50;
+  min-height: 75px;
+  color: white;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  font-size: 30px;
+  margin-top: 20px;
+  margin: 20px;
+  max-width: 30%;
 }
 
 .clear-btn {
   background-color: #f44336;
+  min-height: 75px;
+  color: white;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  font-size: 30px;
+  margin-top: 20px;
+  margin: 20px;
+  max-width: 30%;
+}
+
+button:hover {
+  background-color: #45a049;
 }
 
 .clear-btn:hover {
@@ -141,11 +171,12 @@ button:hover {
 }
 
 .instructions {
-  background-color: #181818;
+  background-color: #000000;
   padding: 15px;
   color: #ffffff;
   border-radius: 4px;
   margin-bottom: 20px;
+  border: 1px solid #111111;
 }
 
 .button-group {
@@ -155,6 +186,7 @@ button:hover {
 
 .button-group button {
   flex: 1;
+  width: 20px;
 }
 
 .input-container {
@@ -202,7 +234,12 @@ button:hover {
   padding: 15px;
   background-color: #d4edda;
   border-radius: 8px;
+  font-family: "Mulish", Arial, sans-serif;
   border: 1px solid #28a745;
+}
+.input-area::placeholder {
+  font-family: "Mulish", Arial, sans-serif;
+  color: #bdbdbd;
 }
 
 .all-done-message {
@@ -228,9 +265,10 @@ button:hover {
 .paragraph-section {
   margin-bottom: 20px;
   padding: 15px;
-  border: 1px solid #ddd;
+  border: 1px solid #111111;
   border-radius: 5px;
-  background-color: #fafafa;
+  background-color: #000000;
+  color: #ffffff;
 }
 
 .content-display {
@@ -254,12 +292,133 @@ button:hover {
   color: #dc3545;
 }
 
-.typing-instruction {
-  font-size: 18px;
-  color: #555;
-  margin: 15px 0;
-  padding: 10px;
-  background-color: #e3f2fd;
-  border-radius: 4px;
+.stats-btn,
+button.stats-btn {
+  /* more specific selector and reset properties so it overrides the global `button` rule */
+  background-color: #616161;
+  color: white;
+  padding: 8px 20px;
+  border: none;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 14px;
+  display: inline-block;
+  width: auto;
+  min-height: initial;
+}
+
+/* optional hover state matching other nav buttons */
+button.stats-btn:hover,
+.stats-btn:hover {
+  background-color: #474747;
+}
+
+/* Two-column layout for the input page */
+.page-container {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+  padding: 20px 0;
+}
+
+.left-pane {
+  flex: 2 1 0;
+  /* keep the outer pane transparent so the inner .pane-container (card) shows on the dark page background */
+  background-color: transparent;
+  padding: 8px 0;
+}
+
+.right-pane {
+  flex: 1 1 0;
+  /* same approach as left-pane: inner .pane-container will be the white card */
+  background-color: transparent;
+  padding: 8px 0;
+}
+
+/* Center controls inside the settings pane without affecting other pages */
+.right-pane .pane-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  /* also allow inline children to center if display styles vary */
   text-align: center;
+  padding-bottom: 50px;
+}
+
+.right-pane .pane-container > div {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.right-pane .pane-container label {
+  text-align: center;
+}
+
+.right-pane .pane-container input[type="color"] {
+  margin: 0px;
+  margin-top: -20px;
+  /* ensure the color input centers inside the pane */
+  display: inline-block;
+  width: 48px;
+  height: 32px;
+}
+
+.right-pane .pane-container .stats-btn,
+.right-pane .pane-container button {
+  align-self: center;
+}
+
+.pane-container {
+  /* make the pane fully black so it matches page background and text remains white */
+  background-color: #000000;
+  border-radius: 20px;
+  padding: 16px;
+  min-height: 200px;
+  color: #ffffff;
+  box-shadow: none;
+  border: 1px solid #111111;
+}
+
+.settings-container input[type="text"],
+.settings-container input[type="color"] {
+  width: 100%;
+}
+
+.settings-container button {
+  width: auto;
+  min-height: initial;
+  font-size: 14px;
+  padding: 8px 12px;
+}
+
+@media (max-width: 900px) {
+  .page-container {
+    flex-direction: column;
+  }
+}
+
+/* Header layout: stats button left, title centered */
+.top-header {
+  position: relative;
+  padding: 8px 0;
+}
+.top-header h1 {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  margin: 0;
+  color: #fff;
+  margin-top: 30px;
+}
+.top-header > .stats-btn {
+  position: absolute;
+  left: 0;
+  margin-top: 50px;
+}
+
+/* Ensure page content doesn't overlap header */
+.page-container {
+  margin-top: 40px;
 }

@@ -38,7 +38,7 @@ function Stats() {
 
   return (
     <div style={{ padding: 24, color: '#fff' }}>
-      <h2>Typing Stats</h2>
+      <h1>Typing Stats</h1>
       <div style={{ marginBottom: 12 }}>
         <button onClick={() => navigate(-1)}>Back</button>
         <button onClick={downloadCSV} style={{ marginLeft: 12 }}>Download CSV</button>

@@ -1,5 +1,6 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import { IoStatsChart } from "react-icons/io5";
 import "./Input.css";
 
 function Input() {
@@ -47,8 +48,6 @@ function Input() {
       }
     });
 
-
-
     localStorage.setItem("contentSections", JSON.stringify(sections));
     localStorage.setItem("currentIndex", 0);
     localStorage.setItem("currentSection", "");
@@ -70,6 +69,14 @@ function Input() {
     localStorage.removeItem("sectionCompleted");
   }
 
+  function updateProgressBar() {
+    if (currentSection.length > 0 && progressFillRef.current) {
+      const progress = (currentLetterIndex / currentSection.length) * 100;
+      progressFillRef.current.style.width = `${progress}%`;
+    } else if (progressFillRef.current) {
+      progressFillRef.current.style.width = "0%";
+    }
+  }
 
   function lightKey() {
     fetch("http://localhost:5050/lights_on_key", {
@@ -77,76 +84,97 @@ function Input() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         key: keyToLight,
-        color: color,
-        duration: 2
+        color: color
+        // omit duration so backend keeps it lit until lights_off
       })
     })
-      .then(res => res.json())
-      .then(data => alert(JSON.stringify(data)))
-      .catch(err => alert("Error: " + err));
+      .then((res) => res.json())
+      .then((data) => alert(JSON.stringify(data)))
+      .catch((err) => alert("Error: " + err));
   }
 
   function runTestPy() {
     fetch("http://localhost:5050/run_test", {
       method: "POST"
     })
-      .then(res => res.json())
-      .then(data => {
+      .then((res) => res.json())
+      .then((data) => {
         alert("Test.py finished!\nSTDOUT:\n" + data.stdout + "\nSTDERR:\n" + data.stderr);
       })
-      .catch(err => alert("Error: " + err));
+      .catch((err) => alert("Error: " + err));
   }
 
   return (
     <div>
-      <div className="container">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <h1>Setup Wizard</h1>
-          <div>
-            <button onClick={() => navigate('/stats')} style={{ marginLeft: 8 }}>Stats</button>
+      {/* top header stays at top across the page */}
+      <div className="top-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 30, marginBottom: 12 }}>
+        <button onClick={() => navigate("/stats")} className="stats-btn" style={{ marginLeft: 8 }} aria-label="Open stats">
+          <IoStatsChart size={18} />
+        </button>
+        <h1 style={{ fontSize: 48 }}>Keyboard Setup Wizard</h1>
+        <div></div>
+      </div>
+
+      <div className="page-container" style={{ marginTop: 70 }}>
+      <div className="left-pane">
+        <h1>Typing Content</h1>
+  <div className="pane-container">
+          <textarea
+            className="input-area"
+            value={wordInput}
+            onChange={(e) => setWordInput(e.target.value)}
+            placeholder={`Enter\ncontent\nlike\nthis`}
+          />
+  
+        
+        </div>
+          <div className="button-group" style={{ display: "flex", gap: "10px", justifyContent: "center" } }>
+            <button className ="start-btn" onClick={createWordList}>Start</button>
+            <button className="clear-btn" onClick={clearWords}>
+              Clear
+            </button>
           </div>
-        </div>
-        <div className="instructions">
-          <p>
-            <strong>Instructions:</strong> Enter content in the input area
-            below. Each line should be a separate paragraph. Click "Start" to begin.
-          </p>
-          <p>
-            {/* <strong>Note:</strong> Long content will be split into sec tions of
-            approximately 100 letters without breaking words. */}
-          </p>
-        </div>
-        <textarea
-          class = "input-area"
-          value={wordInput}
-          onChange={(e) => setWordInput(e.target.value)}
-          placeholder={`Enter\ncontent\nlike\nthis`}
-        />
-        <div className="button-group">
-          <button onClick={createWordList}>Start</button>
-          <button className="clear-btn" onClick={clearWords}>
-            Clear Entries
-          </button>
+      </div>
+
+      <div className="right-pane">
+                <h1>Settings</h1>
+        <div className="pane-container">
+
+          <div style={{ marginTop: 12 }}>
+            {/* <label style={{ color: "#fff", display: 'block', marginBottom: 6 }}>Font size:</label> */}
+            <h1>Font Size</h1>
+            <div style={{ display: "flex", flexDirection: "row", justifyContent: "center", gap: "8px" }}>
+              <button type="button" className="stats-btn" style={{ marginRight: 8 }}>Small</button>
+              <button type="button" className="stats-btn" style={{ marginRight: 8 }}>Medium</button>
+              <button type="button" className="stats-btn">Large</button>
+            </div>
+            <small style={{ color: '#bbb' }}></small>
+          </div>
+
+          <div style={{ marginTop: 16 }}>
+            {/* <label style={{ color: "#fff", display: 'block', marginBottom: 6 }}>LED color:</label> */}
+            <h1>LED Color</h1>
+            <br />
+            <input type="color" value={color} onChange={(e) => setColor(e.target.value)} />
+          </div>
+
+          <div style={{ marginTop: 16 }}>
+            {/* <label style={{ color: "#fff", display: 'block', marginBottom: 6 }}>Lighting type:</label> */}
+            <h1>Lighting Type</h1>
+            <div style={{ display: "flex", flexDirection: "row", justifyContent: "center", gap: "8px" }}>
+            <label style={{ color: '#fff', marginRight: 12 }}>
+              <input type="radio" name="lightingType" defaultChecked /> Individual
+            </label>
+            <label style={{ color: '#fff' }}>
+              <input type="radio" name="lightingType" /> Regional
+            </label>
+            <small style={{ color: '#bbb', display: 'block', }}></small>
+            </div>
+          </div>
+
         </div>
       </div>
-      <div style={{ marginTop: "2em" }}>
-        <h3>Test Light Key</h3>
-        <input
-          type="text"
-          placeholder="Key (e.g. A)"
-          value={keyToLight}
-          onChange={e => setKeyToLight(e.target.value)}
-          style={{ marginRight: "1em" }}
-        />
-        <input
-          type="color"
-          value={color}
-          onChange={e => setColor(e.target.value)}
-          style={{ marginRight: "1em" }}
-        />
-        <button onClick={lightKey}>Light Key</button>
-        <button onClick={runTestPy} style={{ marginLeft: "1em" }}>Run test.py</button>
-      </div>
+    </div>
     </div>
   );
 }
