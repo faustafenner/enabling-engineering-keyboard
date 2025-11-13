@@ -11,7 +11,8 @@
   },
   "devDependencies": {
     "concurrently": "^8.2.0",
-    "electron": "^38.1.2"
+    "electron": "^38.1.2",
+    "prettier": "3.6.2"
   },
   "scripts": {
     "start": "npm start --prefix frontend",
