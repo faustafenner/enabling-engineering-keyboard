@@ -1,5 +1,6 @@
 Instruction for opening the project:
-1. Download the file and SteelSeries GG. https://steelseries.com/gg
+1. Download the file and SteelSeries GG. https://steelseries.com/gg.
+After download SteelSeries GG, we do not need to open it, just leave it there.
 
 2. Locate and copy the folder path.
 
