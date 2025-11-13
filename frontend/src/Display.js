@@ -31,43 +31,16 @@ function Display() {
   const [fontSize, setFontSize] = useState(120);
   const [effectiveFontSize, setEffectiveFontSize] = useState(fontSize);
   const [lightingMode, setLightingMode] = useState("individual");
-
-  // fireworks: parent pushes fireworks here
+  const [fullTextModalOpen, setFullTextModalOpen] = useState(false);
   const [fireworks, setFireworks] = useState([]);
 
   const progressFillRef = useRef(null);
   const wordContainerRef = useRef(null);
 
-  // ----------------- AUTOSCALE FONT SIZE -----------------
-  const [viewportWidth, setViewportWidth] = useState(window.innerWidth);
-
+  // Set fixed font size without auto-scaling
   useEffect(() => {
-    const handleResize = () => setViewportWidth(window.innerWidth);
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
-
-  useEffect(() => {
-    if (!currentSection) return;
-
-    const container = wordContainerRef.current;
-    if (!container) return;
-
-    const containerWidth = container.clientWidth - 8;
-    const longestWordLength = Math.max(
-      ...currentSection.split(/\s+/).map((w) => w.length)
-    );
-
-    const estimateChar = (f) => f * 1.25;
-    const needed = estimateChar(fontSize) * longestWordLength;
-
-    if (needed <= containerWidth) {
-      setEffectiveFontSize(fontSize);
-    } else {
-      const scaled = Math.max(24, Math.floor(fontSize * (containerWidth / needed)));
-      setEffectiveFontSize(scaled);
-    }
-  }, [currentSection, fontSize, viewportWidth]);
+    setEffectiveFontSize(fontSize);
+  }, [fontSize]);
 
   // ----------------- LOAD CURRENT SECTION -----------------
   useEffect(() => {
@@ -106,39 +79,33 @@ function Display() {
         if (next === currentSection.length) {
           setSectionCompleted(true);
 
-
           const newFireworks = [];
           const baseX = window.innerWidth / 2;
           const baseY = window.innerHeight * 0.1;
-          
 
           newFireworks.push({
             id: Date.now(),
             targetX: baseX,
             targetY: baseY,
           });
-          
 
           newFireworks.push({
             id: Date.now() + 1,
             targetX: baseX - 200,
             targetY: baseY + 50,
           });
-          
 
           newFireworks.push({
             id: Date.now() + 2,
             targetX: baseX + 200,
             targetY: baseY + 50,
           });
-          
 
           newFireworks.push({
             id: Date.now() + 3,
             targetX: baseX - 150,
             targetY: baseY - 50,
           });
-          
 
           newFireworks.push({
             id: Date.now() + 4,
@@ -150,15 +117,13 @@ function Display() {
             ...prev,
             ...newFireworks,
           ]);
-          
-          
         }
       }
     };
 
     window.addEventListener("keydown", handleKeyPress);
     return () => window.removeEventListener("keydown", handleKeyPress);
-  }, [currentSection, currentLetterIndex, sectionCompleted]);
+  }, [currentSection, currentLetterIndex, sectionCompleted, lightingMode]);
 
   // ----------------- PROGRESS BAR -----------------
   const updateProgressBar = (current, total) => {
@@ -191,11 +156,23 @@ function Display() {
         </div>
       </div>
 
+      {/* Full Text Preview Modal */}
+      {fullTextModalOpen && (
+        <div className="modal-overlay" onClick={() => setFullTextModalOpen(false)}>
+          <div className="modal-panel" onClick={(e) => e.stopPropagation()}>
+            <h3>Current Text</h3>
+            <p style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>{currentSection}</p>
+            <button onClick={() => setFullTextModalOpen(false)}>Close</button>
+          </div>
+        </div>
+      )}
+
       {/* Fireworks Overlay */}
       <FireworkCanvas fireworks={fireworks} />
 
       {/* Word Display */}
-      <div ref={wordContainerRef}>
+            {/* Word Display - Center container */}
+      <div ref={wordContainerRef} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh', width: '100%', overflow: 'visible' }}>
         <WordRenderer
           currentSection={currentSection}
           currentLetterIndex={currentLetterIndex}
@@ -218,6 +195,14 @@ function Display() {
 
       <button className="settings-top-btn" onClick={() => setSettingsOpen(true)}>
         Settings
+      </button>
+
+      <button 
+        className="settings-top-btn" 
+        onClick={() => setFullTextModalOpen(true)}
+        style={{ right: '140px' }}
+      >
+        Show Full Text
       </button>
 
       {/* Modal */}

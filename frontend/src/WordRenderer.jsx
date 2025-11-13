@@ -15,47 +15,70 @@ export default function WordRenderer({
     })
   , [currentLetterIndex, currentSection]);
 
+  // Split content into words and render each word on its own row
+  const words = currentSection.split(" ");
+  let charIdx = 0;
+
   return (
-    <p style={{
+    <div style={{
       margin: 0,
       padding: '20px',
       width: '100%',
-      textAlign: 'center',
-      wordBreak: 'keep-all',
-      whiteSpace: 'normal',
-      lineHeight: '1.5',
       display: 'flex',
-      justifyContent: 'center',
+      flexDirection: 'column',
       alignItems: 'center',
-      flexWrap: 'wrap'
+      justifyContent: 'center',
+      overflow: 'visible',
+      gap: '16px'
     }}>
-      {currentSection.split("").map((char, idx) => {
-        const isCurrent = idx === currentLetterIndex;
-        const isCorrect = idx < currentLetterIndex;
+      {words.map((word, wordIdx) => {
+        const wordStart = charIdx;
+        charIdx += word.length + 1; // +1 for the space
 
         return (
-          <span
-            key={idx}
-            ref={(el) => (letterRefs.current[idx] = el)}
+          <div
+            key={wordIdx}
             style={{
-              minWidth: effectiveFontSize * 0.65 + "px",
-              padding: `${effectiveFontSize * 0.18}px ${effectiveFontSize * 0.22}px`,
-              margin: effectiveFontSize * 0.08 + "px",
-              fontSize: effectiveFontSize,
-              background: isCorrect ? "#28a745" : isCurrent ? "#ff9800" : "#181818",
-              color: "#fff",
-              borderRadius: effectiveFontSize * 0.25 + "px",
-              display: 'inline-flex',
+              display: 'flex',
+              flexWrap: 'nowrap',
               alignItems: 'center',
               justifyContent: 'center',
-              wordBreak: 'keep-all',
-              whiteSpace: 'nowrap'
+              gap: '4px',
+              whiteSpace: 'nowrap',
+              overflowX: 'auto',
+              padding: '8px'
             }}
           >
-            {char === " " ? "\u00A0" : char}
-          </span>
+            {word.split("").map((char, charInWordIdx) => {
+              const absoluteIdx = wordStart + charInWordIdx;
+              const isCurrent = absoluteIdx === currentLetterIndex;
+              const isCorrect = absoluteIdx < currentLetterIndex;
+
+              return (
+                <span
+                  key={`${wordIdx}-${charInWordIdx}`}
+                  ref={(el) => (letterRefs.current[absoluteIdx] = el)}
+                  style={{
+                    minWidth: effectiveFontSize * 0.65 + "px",
+                    padding: `${effectiveFontSize * 0.18}px ${effectiveFontSize * 0.22}px`,
+                    margin: effectiveFontSize * 0.08 + "px",
+                    fontSize: effectiveFontSize,
+                    background: isCorrect ? "#28a745" : isCurrent ? "#ff9800" : "#181818",
+                    color: "#fff",
+                    borderRadius: effectiveFontSize * 0.25 + "px",
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    wordBreak: 'keep-all'
+                  }}
+                >
+                  {char}
+                </span>
+              );
+            })}
+          </div>
         );
       })}
-    </p>
+    </div>
   );
 }

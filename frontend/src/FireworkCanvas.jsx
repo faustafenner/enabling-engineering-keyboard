@@ -4,7 +4,7 @@ import React, { useEffect, useRef } from "react";
 import CanvasFirework from "./FireworkEngine";
 
 
-export default function FireworkCanvas({ fireworks }) {
+export default function FireworkCanvas({ fireworks = [] }) {
   const canvasRef = useRef(null);
   const animationRef = useRef(null);
   const fireworksRef = useRef([]);
@@ -31,10 +31,11 @@ export default function FireworkCanvas({ fireworks }) {
     const animate = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+      // Update and draw each firework; keep those still alive.
       fireworksRef.current = fireworksRef.current.filter((fw) => {
-        fw.update();
+        const alive = fw.update();
         fw.draw(ctx);
-        return fw.update(); // keep if still active
+        return alive; // keep if still active
       });
 
       if (fireworksRef.current.length > 0) {
