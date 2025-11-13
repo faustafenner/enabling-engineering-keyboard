@@ -10,11 +10,14 @@ function Display() {
   const navigate = useNavigate();
 
   // ----------------- UI / STATES -----------------
+  
+  // load word list
   const [contentSections, setContentSections] = useState(() => {
     const saved = localStorage.getItem("contentSections");
     return saved ? JSON.parse(saved) : [];
   });
 
+  // load index
   const [currentIndex, setCurrentIndex] = useState(() => {
     const saved = localStorage.getItem("currentIndex");
     return saved ? Number(saved) : 0;
@@ -82,7 +85,6 @@ function Display() {
       if (!currentSection || sectionCompleted) return;
       if (e.key.length !== 1) return;
 
-      // 阻止空格键导致的页面滚动
       if (e.key === " ") {
         e.preventDefault();
       }
@@ -91,44 +93,53 @@ function Display() {
         const next = currentLetterIndex + 1;
         setCurrentLetterIndex(next);
         updateProgressBar(next, currentSection.length);
+        
+        fetch("http://localhost:5050/lights_on_key", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            key: e.key === ' ' ? 'SPACE' : e.key.toUpperCase(),
+            color: lightingMode === "individual" ? "#00FF00" : "#00FF00"
+          })
+        }).catch(err => console.error("Error lighting key:", err));
 
         if (next === currentSection.length) {
           setSectionCompleted(true);
 
-          // 生成5个烟花而不是1个
+
           const newFireworks = [];
           const baseX = window.innerWidth / 2;
           const baseY = window.innerHeight * 0.1;
           
-          // 中间烟花
+
           newFireworks.push({
             id: Date.now(),
             targetX: baseX,
             targetY: baseY,
           });
           
-          // 左侧烟花
+
           newFireworks.push({
             id: Date.now() + 1,
             targetX: baseX - 200,
             targetY: baseY + 50,
           });
           
-          // 右侧烟花
+
           newFireworks.push({
             id: Date.now() + 2,
             targetX: baseX + 200,
             targetY: baseY + 50,
           });
           
-          // 左上烟花
+
           newFireworks.push({
             id: Date.now() + 3,
             targetX: baseX - 150,
             targetY: baseY - 50,
           });
           
-          // 右上烟花
+
           newFireworks.push({
             id: Date.now() + 4,
             targetX: baseX + 150,
@@ -139,6 +150,8 @@ function Display() {
             ...prev,
             ...newFireworks,
           ]);
+          
+          
         }
       }
     };

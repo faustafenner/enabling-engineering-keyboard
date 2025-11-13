@@ -70,14 +70,6 @@ function Input() {
     localStorage.removeItem("sectionCompleted");
   }
 
-  function updateProgressBar() {
-    if (currentSection.length > 0) {
-      const progress = (currentLetterIndex / currentSection.length) * 100;
-      progressFillRef.current.style.width = `${progress}%`;
-    } else {
-      progressFillRef.current.style.width = "0%";
-    }
-  }
 
   function lightKey() {
     fetch("http://localhost:5050/lights_on_key", {

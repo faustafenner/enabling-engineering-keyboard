@@ -2,19 +2,13 @@ Instruction for opening the project:
 1. Download the file and SteelSeries GG. https://steelseries.com/gg
 
 2. Locate and copy the folder path.
-On Windows
-Open the folder in File Explorer.
-Click the address bar (top area showing the folder location).
 
 On Mac
 Open Finder and locate the folder.
 Right-click on the folder while holding the Option key.
 Click Copy “foldername” as Pathname.
 
-3.Open the Terminal (Mac) or Command Window (Windows)
-On Windows:
-Press Windows Key, type cmd, and press Enter
-(this opens Command Prompt).
+3.Open the Terminal (Mac)
 
 On Mac:
 Press Command + Space, type Terminal, press Enter.
@@ -23,14 +17,15 @@ Press Command + Space, type Terminal, press Enter.
 
 5. Run the project
 Mac Users:
-In Terminal, type:
+In Terminal, type or paste:
 chmod +x start.sh
 (Press Enter. This gives permission to run the file.)
 Then run the project:
 ./start.sh
 
-Windows Users:
-Just double-click start.bat
-(or right-click → Run if it doesn't open)
+During the initialization, the system may ask you the password to access sudo, which means it needs administrators'
+permission to install some of the prerequisite. In that case, please enter the password that unlock your device.
+Note, you will not able to see the password in the terminal, so just input the password and hit enter.
 
-The project will launch automatically.
+After few mintues wait, the project will launched automatically. For future use,
+./start.sh is enough to open the project.

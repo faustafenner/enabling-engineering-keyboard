@@ -1,4 +1,5 @@
 // FireworkCanvas.jsx
+//https://juejin.cn/post/7466363839858409498
 import React, { useEffect, useRef } from "react";
 import CanvasFirework from "./FireworkEngine";
 
