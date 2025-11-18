@@ -1,0 +1,22 @@
+[INFO] Connected to SteelSeries GG at http://127.0.0.1:49254 (coreProps: /Library/Application Support/SteelSeries Engine 3/coreProps.json)
+[INFO] All keys lights off (no-flash)
+Initialized lighting: all keys turned off.
+ * Serving Flask app 'light_server'
+ * Debug mode: off
+WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
+ * Running on http://127.0.0.1:5050
+Press CTRL+C to quit
+127.0.0.1 - - [18/Nov/2025 13:26:04] "POST /lights_off HTTP/1.1" 200 -
+127.0.0.1 - - [18/Nov/2025 13:26:22] "OPTIONS /lights_on_key HTTP/1.1" 200 -
+127.0.0.1 - - [18/Nov/2025 13:26:22] "POST /lights_off HTTP/1.1" 200 -
+127.0.0.1 - - [18/Nov/2025 13:26:23] "POST /lights_off HTTP/1.1" 200 -
+127.0.0.1 - - [18/Nov/2025 13:26:24] "POST /lights_on_key HTTP/1.1" 200 -
+127.0.0.1 - - [18/Nov/2025 13:26:34] "OPTIONS /lights_on_key HTTP/1.1" 200 -
+127.0.0.1 - - [18/Nov/2025 13:26:36] "POST /lights_on_key HTTP/1.1" 200 -
+127.0.0.1 - - [18/Nov/2025 13:26:36] "POST /lights_off HTTP/1.1" 200 -
+127.0.0.1 - - [18/Nov/2025 13:26:47] "OPTIONS /lights_on_key HTTP/1.1" 200 -
+127.0.0.1 - - [18/Nov/2025 13:26:47] "POST /lights_on_key HTTP/1.1" 200 -
+127.0.0.1 - - [18/Nov/2025 13:26:47] "POST /lights_off HTTP/1.1" 200 -
+127.0.0.1 - - [18/Nov/2025 13:26:50] "OPTIONS /lights_off_key HTTP/1.1" 200 -
+127.0.0.1 - - [18/Nov/2025 13:26:51] "POST /lights_off_key HTTP/1.1" 200 -
+127.0.0.1 - - [18/Nov/2025 13:26:52] "POST /lights_on_key HTTP/1.1" 200 -

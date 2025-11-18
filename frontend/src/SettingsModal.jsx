@@ -1,8 +1,11 @@
+import React from "react";
+
 export default function SettingsModal({
   fontSize,
   setFontSize,
   lightingMode,
   setLightingMode,
+  resetKeyLights,
   close,
 }) {
   return (
@@ -115,8 +118,30 @@ export default function SettingsModal({
         </div>
 
         <button 
+          onClick={() => {
+            resetKeyLights();
+            console.log("Keyboard lights reset");
+          }}
+          style={{
+            width: "100%",
+            padding: "8px 16px",
+            marginBottom: "12px",
+            backgroundColor: "#ff6b6b",
+            color: "#fff",
+            border: "none",
+            borderRadius: "4px",
+            cursor: "pointer",
+            fontSize: "14px",
+            fontWeight: "500",
+          }}
+        >
+          Reset Keyboard Lights
+        </button>
+
+        <button 
           onClick={close}
           style={{
+            width: "100%",
             padding: "8px 16px",
             backgroundColor: "#333",
             color: "#fff",

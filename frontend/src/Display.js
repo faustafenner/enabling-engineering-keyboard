@@ -1,8 +1,8 @@
 // Display.jsx
-import React, { useState, useEffect, useRef } from "react";
-import WordRenderer from "./WordRenderer";
-import SettingsModal from "./SettingsModal";
-import FireworkCanvas from "./FireworkCanvas";
+import React, { useState, useEffect, useRef, useCallback } from "react";
+import WordRenderer from "./WordRenderer.jsx";
+import SettingsModal from "./SettingsModal.jsx";
+import FireworkCanvas from "./FireworkCanvas.jsx";
 import { useNavigate } from "react-router-dom";
 import "./Display.css";
 
@@ -42,6 +42,56 @@ function Display() {
     setEffectiveFontSize(fontSize);
   }, [fontSize]);
 
+  // Reset lights when Display component mounts (app startup only)
+  useEffect(() => {
+    fetch("http://localhost:5050/lights_off", { method: "POST" })
+      .then(() => console.log("Reset keyboard lights on Display load"))
+      .catch(err => console.error("Error resetting lights:", err));
+  }, []);
+
+  // Light up a key on the keyboard (individual or region mode)
+  const lightKey = useCallback((key) => {
+    const endpoint = lightingMode === "region" 
+      ? "http://localhost:5050/lights_on_region_for_key"
+      : "http://localhost:5050/lights_on_key";
+    
+    fetch(endpoint, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        key: key === ' ' ? ' ' : key,
+        color: "#ffffff",
+        duration: 3600  // 1 hour - effectively stays lit until next key pressed
+      })
+    }).catch(err => console.error("Error lighting key:", err));
+  }, [lightingMode]);
+
+  // Turn off a key on the keyboard (individual or region mode)
+  const turnOffKey = useCallback((key) => {
+    const endpoint = lightingMode === "region"
+      ? "http://localhost:5050/lights_off_region_for_key"
+      : "http://localhost:5050/lights_off_key";
+    
+    fetch(endpoint, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        key: key === ' ' ? ' ' : key
+      })
+    }).catch(err => console.error("Error turning off key:", err));
+  }, [lightingMode]);
+
+  // Reset all keyboard lights
+  const resetKeyLights = useCallback(() => {
+    fetch("http://localhost:5050/lights_off", { method: "POST" })
+      .then(() => console.log("Keyboard lights reset"))
+      .catch(err => console.error("Error resetting lights:", err));
+  }, []);
+
+
+  // Keep track of the previous section for smooth transitions
+  const previousSectionRef = useRef("");
+
   // ----------------- LOAD CURRENT SECTION -----------------
   useEffect(() => {
     if (contentSections.length === 0) return;
@@ -50,7 +100,26 @@ function Display() {
     setCurrentLetterIndex(0);
     setSectionCompleted(false);
     updateProgressBar(0, section.length);
-  }, [contentSections, currentIndex]);
+    
+    // Turn off the first key of the previous section to avoid flashing
+    if (previousSectionRef.current && previousSectionRef.current.length > 0) {
+      turnOffKey(previousSectionRef.current[0]);
+      
+      // Add small delay before lighting the new key to prevent timing race conditions
+      setTimeout(() => {
+        if (section.length > 0) {
+          lightKey(section[0]);
+          previousSectionRef.current = section;
+        }
+      }, 50);
+    } else {
+      // If no previous section, light immediately
+      if (section.length > 0) {
+        lightKey(section[0]);
+        previousSectionRef.current = section;
+      }
+    }
+  }, [contentSections, currentIndex, lightKey, turnOffKey]);
 
   // ----------------- KEYBOARD INPUT -----------------
   useEffect(() => {
@@ -63,18 +132,18 @@ function Display() {
       }
 
       if (e.key === currentSection[currentLetterIndex]) {
+        // Turn off the current key
+        turnOffKey(currentSection[currentLetterIndex]);
+        
         const next = currentLetterIndex + 1;
         setCurrentLetterIndex(next);
         updateProgressBar(next, currentSection.length);
         
-        fetch("http://localhost:5050/lights_on_key", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            key: e.key === ' ' ? 'SPACE' : e.key.toUpperCase(),
-            color: lightingMode === "individual" ? "#00FF00" : "#00FF00"
-          })
-        }).catch(err => console.error("Error lighting key:", err));
+        // Light up the next key (if not at end of section)
+        if (next < currentSection.length) {
+          const nextKey = currentSection[next];
+          lightKey(nextKey);
+        }
 
         if (next === currentSection.length) {
           setSectionCompleted(true);
@@ -123,7 +192,7 @@ function Display() {
 
     window.addEventListener("keydown", handleKeyPress);
     return () => window.removeEventListener("keydown", handleKeyPress);
-  }, [currentSection, currentLetterIndex, sectionCompleted, lightingMode]);
+  }, [currentSection, currentLetterIndex, sectionCompleted, lightingMode, lightKey, turnOffKey]);
 
   // ----------------- PROGRESS BAR -----------------
   const updateProgressBar = (current, total) => {
@@ -212,6 +281,7 @@ function Display() {
           setFontSize={setFontSize}
           lightingMode={lightingMode}
           setLightingMode={setLightingMode}
+          resetKeyLights={resetKeyLights}
           close={() => setSettingsOpen(false)}
         />
       )}
