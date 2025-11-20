@@ -28,9 +28,15 @@ function Display() {
   const [sectionCompleted, setSectionCompleted] = useState(false);
 
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const [fontSize, setFontSize] = useState(120);
+  const [fontSize, setFontSize] = useState(() => {
+    const saved = localStorage.getItem("fontSize");
+    return saved ? Number(saved) : 120;
+  });
   const [effectiveFontSize, setEffectiveFontSize] = useState(fontSize);
-  const [lightingMode, setLightingMode] = useState("individual");
+  const [lightingMode, setLightingMode] = useState(() => {
+    const saved = localStorage.getItem("lightingMode");
+    return saved || "individual";
+  });
   const [fullTextModalOpen, setFullTextModalOpen] = useState(false);
   const [fireworks, setFireworks] = useState([]);
 
@@ -40,7 +46,14 @@ function Display() {
   // Set fixed font size without auto-scaling
   useEffect(() => {
     setEffectiveFontSize(fontSize);
+    // Persist fontSize changes to localStorage
+    localStorage.setItem("fontSize", fontSize.toString());
   }, [fontSize]);
+
+  // Persist lightingMode changes to localStorage
+  useEffect(() => {
+    localStorage.setItem("lightingMode", lightingMode);
+  }, [lightingMode]);
 
   // ----------------- LOAD CURRENT SECTION -----------------
   useEffect(() => {
@@ -67,12 +80,13 @@ function Display() {
         setCurrentLetterIndex(next);
         updateProgressBar(next, currentSection.length);
         
+        const ledColor = localStorage.getItem("ledColor") || "#00FF00";
         fetch("http://localhost:5050/lights_on_key", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             key: e.key === ' ' ? 'SPACE' : e.key.toUpperCase(),
-            color: lightingMode === "individual" ? "#00FF00" : "#00FF00"
+            color: ledColor
           })
         }).catch(err => console.error("Error lighting key:", err));
 

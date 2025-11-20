@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { IoStatsChart } from "react-icons/io5";
 import "./Input.css";
@@ -8,10 +8,34 @@ function Input() {
   const [wordInput, setWordInput] = useState("");
   const [currentSection, setCurrentSection] = useState("");
   const [currentLetterIndex, setCurrentLetterIndex] = useState(0);
-  const [color, setColor] = useState("#00FF00");
+  const [color, setColor] = useState(() => {
+    const saved = localStorage.getItem("ledColor");
+    return saved || "#00FF00";
+  });
   const [keyToLight, setKeyToLight] = useState("");
+  const [fontSize, setFontSize] = useState(() => {
+    const saved = localStorage.getItem("fontSize");
+    return saved ? Number(saved) : 120;
+  });
+  const [lightingMode, setLightingMode] = useState(() => {
+    const saved = localStorage.getItem("lightingMode");
+    return saved || "individual";
+  });
 
   const progressFillRef = useRef(null);
+
+  // Persist settings to localStorage
+  useEffect(() => {
+    localStorage.setItem("ledColor", color);
+  }, [color]);
+
+  useEffect(() => {
+    localStorage.setItem("fontSize", fontSize.toString());
+  }, [fontSize]);
+
+  useEffect(() => {
+    localStorage.setItem("lightingMode", lightingMode);
+  }, [lightingMode]);
 
   function createWordList() {
     const paragraphs = wordInput
@@ -144,9 +168,30 @@ function Input() {
             {/* <label style={{ color: "#fff", display: 'block', marginBottom: 6 }}>Font size:</label> */}
             <h1>Font Size</h1>
             <div style={{ display: "flex", flexDirection: "row", justifyContent: "center", gap: "8px" }}>
-              <button type="button" className="stats-btn" style={{ marginRight: 8 }}>Small</button>
-              <button type="button" className="stats-btn" style={{ marginRight: 8 }}>Medium</button>
-              <button type="button" className="stats-btn">Large</button>
+              <button 
+                type="button" 
+                className={`stats-btn ${fontSize === 80 ? 'active' : ''}`} 
+                style={{ marginRight: 8, backgroundColor: fontSize === 80 ? '#007bff' : '#616161' }}
+                onClick={() => setFontSize(80)}
+              >
+                Small
+              </button>
+              <button 
+                type="button" 
+                className={`stats-btn ${fontSize === 120 ? 'active' : ''}`} 
+                style={{ marginRight: 8, backgroundColor: fontSize === 120 ? '#007bff' : '#616161' }}
+                onClick={() => setFontSize(120)}
+              >
+                Medium
+              </button>
+              <button 
+                type="button" 
+                className={`stats-btn ${fontSize === 160 ? 'active' : ''}`}
+                style={{ backgroundColor: fontSize === 160 ? '#007bff' : '#616161' }}
+                onClick={() => setFontSize(160)}
+              >
+                Large
+              </button>
             </div>
             <small style={{ color: '#bbb' }}></small>
           </div>
@@ -163,10 +208,20 @@ function Input() {
             <h1>Lighting Type</h1>
             <div style={{ display: "flex", flexDirection: "row", justifyContent: "center", gap: "8px" }}>
             <label style={{ color: '#fff', marginRight: 12 }}>
-              <input type="radio" name="lightingType" defaultChecked /> Individual
+              <input 
+                type="radio" 
+                name="lightingType" 
+                checked={lightingMode === "individual"}
+                onChange={() => setLightingMode("individual")}
+              /> Individual
             </label>
             <label style={{ color: '#fff' }}>
-              <input type="radio" name="lightingType" /> Regional
+              <input 
+                type="radio" 
+                name="lightingType" 
+                checked={lightingMode === "regional"}
+                onChange={() => setLightingMode("regional")}
+              /> Regional
             </label>
             <small style={{ color: '#bbb', display: 'block', }}></small>
             </div>

@@ -47,7 +47,7 @@ export default function SettingsModal({
           gap: "8px",
           marginBottom: "16px"
         }}>
-          {[120, 140, 160].map((size) => (
+          {[80, 120, 160].map((size) => (
             <button
               key={size}
               onClick={() => setFontSize(size)}
@@ -63,7 +63,7 @@ export default function SettingsModal({
                 fontSize: "14px",
               }}
             >
-              {size === 120 ? "Small" : size === 140 ? "Medium" : "Large"}
+              {size === 80 ? "Small" : size === 120 ? "Medium" : "Large"}
             </button>
           ))}
         </div>
@@ -104,13 +104,13 @@ export default function SettingsModal({
           }}>
             <input
               type="radio"
-              checked={lightingMode === "region"}
-              onChange={() => setLightingMode("region")}
+              checked={lightingMode === "regional"}
+              onChange={() => setLightingMode("regional")}
               style={{
                 cursor: "pointer"
               }}
             />
-            Region
+            Regional
           </label>
         </div>
 
