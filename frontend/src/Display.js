@@ -1,8 +1,8 @@
 // Display.jsx
-import React, { useState, useEffect, useRef } from "react";
-import WordRenderer from "./WordRenderer";
-import SettingsModal from "./SettingsModal";
-import FireworkCanvas from "./FireworkCanvas";
+import React, { useState, useEffect, useRef, useCallback } from "react";
+import WordRenderer from "./WordRenderer.jsx";
+import SettingsModal from "./SettingsModal.jsx";
+import FireworkCanvas from "./FireworkCanvas.jsx";
 import { useNavigate } from "react-router-dom";
 import "./Display.css";
 
@@ -50,11 +50,6 @@ function Display() {
     localStorage.setItem("fontSize", fontSize.toString());
   }, [fontSize]);
 
-  // Persist lightingMode changes to localStorage
-  useEffect(() => {
-    localStorage.setItem("lightingMode", lightingMode);
-  }, [lightingMode]);
-
   // ----------------- LOAD CURRENT SECTION -----------------
   useEffect(() => {
     if (contentSections.length === 0) return;
@@ -63,7 +58,26 @@ function Display() {
     setCurrentLetterIndex(0);
     setSectionCompleted(false);
     updateProgressBar(0, section.length);
-  }, [contentSections, currentIndex]);
+    
+    // Turn off the first key of the previous section to avoid flashing
+    if (previousSectionRef.current && previousSectionRef.current.length > 0) {
+      turnOffKey(previousSectionRef.current[0]);
+      
+      // Add small delay before lighting the new key to prevent timing race conditions
+      setTimeout(() => {
+        if (section.length > 0) {
+          lightKey(section[0]);
+          previousSectionRef.current = section;
+        }
+      }, 50);
+    } else {
+      // If no previous section, light immediately
+      if (section.length > 0) {
+        lightKey(section[0]);
+        previousSectionRef.current = section;
+      }
+    }
+  }, [contentSections, currentIndex, lightKey, turnOffKey]);
 
   // ----------------- KEYBOARD INPUT -----------------
   useEffect(() => {
@@ -76,17 +90,19 @@ function Display() {
       }
 
       if (e.key === currentSection[currentLetterIndex]) {
+        // Turn off the current key
+        turnOffKey(currentSection[currentLetterIndex]);
+        
         const next = currentLetterIndex + 1;
         setCurrentLetterIndex(next);
         updateProgressBar(next, currentSection.length);
         
-        const ledColor = localStorage.getItem("ledColor") || "#00FF00";
         fetch("http://localhost:5050/lights_on_key", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             key: e.key === ' ' ? 'SPACE' : e.key.toUpperCase(),
-            color: ledColor
+            color: lightingMode === "individual" ? "#00FF00" : "#00FF00"
           })
         }).catch(err => console.error("Error lighting key:", err));
 
@@ -137,7 +153,7 @@ function Display() {
 
     window.addEventListener("keydown", handleKeyPress);
     return () => window.removeEventListener("keydown", handleKeyPress);
-  }, [currentSection, currentLetterIndex, sectionCompleted, lightingMode]);
+  }, [currentSection, currentLetterIndex, sectionCompleted, lightingMode, lightKey, turnOffKey]);
 
   // ----------------- PROGRESS BAR -----------------
   const updateProgressBar = (current, total) => {
@@ -226,6 +242,7 @@ function Display() {
           setFontSize={setFontSize}
           lightingMode={lightingMode}
           setLightingMode={setLightingMode}
+          resetKeyLights={resetKeyLights}
           close={() => setSettingsOpen(false)}
         />
       )}

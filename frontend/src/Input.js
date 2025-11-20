@@ -109,7 +109,7 @@ function Input() {
       body: JSON.stringify({
         key: keyToLight,
         color: color
-        // omit duration so backend keeps it lit until lights_off
+        // omit duration so backend keeps it lit until lights_offer
       })
     })
       .then((res) => res.json())

@@ -15,7 +15,7 @@ CORS(app)
 
 lighting = SteelSeriesLighting(game="MYAPP")
 try:
-    lighting.remove_game()  # 如果之前没注册过，会返回错误但不影响
+    lighting.remove_game() 
 except Exception:
     pass
 lighting.register_game("Python Test", "Me", deinitialize_timer_length_ms=60000)  # 60秒先验证
@@ -28,7 +28,7 @@ for letter in string.ascii_lowercase:
     event = f"{letter.upper()}KEY_EVENT"  # Unique event name for each letter
     try:
         lighting.register_event(event)  # Register the event with SteelSeries GG
-        lighting.bind_key_color(event, letter, "#ffffff")  # Bind the key to the event with a default color
+        lighting.bind_key_color(event, letter, "#000000")  # Bind the key to the event with black (off) as default
     except Exception as e:
         print(f"Failed to pre-bind {letter}: {e}")
 
@@ -93,6 +93,89 @@ def lights_on_region():
             lighting.lights_on_region(event, key, color, duration=duration)
         return jsonify({"status": f"Region for key {key} lights on with {color}"})
     except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+# Endpoint to turn off a specific key
+@app.route("/lights_off_key", methods=["POST"])
+def lights_off_key():
+    data = request.get_json()
+    key = data.get("key")  # The letter/key to turn off
+    
+    if not key:
+        return jsonify({"error": "No key provided"}), 400
+    
+    try:
+        # Determine the key name for the event
+        if key == " ":
+            key_name = "space"
+            key_display = "space"
+        elif len(key) == 1 and key.isalpha():
+            key_name = key.lower()
+            key_display = key
+        else:
+            # Handle special keys like function keys
+            key_name = key.lower().replace(" ", "_")
+            key_display = key
+        
+        event = f"{key_name.upper()}KEY_EVENT"
+        
+        # Stop the refresher thread for this specific key's event
+        lighting._stop_event_refresher(event)
+        
+        # Light the key with black color (off) for just a moment
+        try:
+            # Use the event to set the key to black with no duration
+            payload = {
+                "game": lighting.game,
+                "event": event,
+                "data": {"value": 0}
+            }
+            lighting._post("game_event", payload)
+        except:
+            pass  # If posting fails, the refresher stop should still work
+        
+        return jsonify({"status": f"Key '{key_display}' turned off"})
+    except Exception as e:
+        print(f"Error turning off key '{key}': {e}")
+        return jsonify({"error": str(e)}), 500
+
+# Endpoint to turn off a specific key region based on the key
+@app.route("/lights_off_region_for_key", methods=["POST"])
+def lights_off_region_for_key():
+    """Turn off a region based on the key provided"""
+    data = request.get_json()
+    key = data.get("key")  # The letter/key to determine region
+    
+    if not key:
+        return jsonify({"error": "No key provided"}), 400
+    
+    try:
+        key_lower = key.lower() if key != " " else key  # Normalize to lowercase
+        region_name = get_region_for_key(key_lower)
+        if not region_name:
+            return jsonify({"error": f"Key '{key_lower}' not in any region"}), 400
+        
+        # Turn off each key in the region immediately
+        region_keys = KEYBOARD_REGIONS[region_name]
+        
+        for region_key in region_keys:
+            event = f"{region_key.upper()}KEY_EVENT"
+            try:
+                # Stop the refresher thread for this key
+                lighting._stop_event_refresher(event)
+                # Post game event to turn off
+                payload = {
+                    "game": lighting.game,
+                    "event": event,
+                    "data": {"value": 0}
+                }
+                lighting._post("game_event", payload)
+            except Exception as e:
+                print(f"Failed to turn off key '{region_key}' in region: {e}")
+        
+        return jsonify({"status": f"Region {region_name} turned off for key '{key_lower}'"})
+    except Exception as e:
+        print(f"Error turning off region for key '{key}': {e}")
         return jsonify({"error": str(e)}), 500
 
 # Endpoint to turn off all keyboard lights
