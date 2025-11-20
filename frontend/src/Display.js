@@ -61,7 +61,7 @@ function Display() {
       body: JSON.stringify({
         key: key === ' ' ? ' ' : key,
         color: "#ffffff",
-        duration: 3600  // 1 hour - effectively stays lit until next key pressed
+        duration: 10
       })
     }).catch(err => console.error("Error lighting key:", err));
   }, [lightingMode]);
