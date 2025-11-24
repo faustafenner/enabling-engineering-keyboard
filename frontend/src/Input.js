@@ -12,6 +12,7 @@ function Input() {
     const saved = localStorage.getItem("ledColor");
     return saved || "#00FF00";
   });
+  const previousColorRef = useRef(color);
   const [keyToLight, setKeyToLight] = useState("");
   const [fontSize, setFontSize] = useState(() => {
     const saved = localStorage.getItem("fontSize");
@@ -26,7 +27,18 @@ function Input() {
 
   // Persist settings to localStorage
   useEffect(() => {
+    // Check if this is a real color change (not initial mount)
+    const isColorChange = previousColorRef.current !== color && previousColorRef.current !== undefined;
+    
     localStorage.setItem("ledColor", color);
+    
+    // If color changed by user, trigger re-priming by reloading the app
+    if (isColorChange) {
+      window.location.reload();
+    }
+    
+    // Update the ref for next comparison
+    previousColorRef.current = color;
   }, [color]);
 
   useEffect(() => {

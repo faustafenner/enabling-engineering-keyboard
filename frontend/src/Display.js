@@ -33,22 +33,82 @@ function Display() {
     return saved ? Number(saved) : 120;
   });
   const [effectiveFontSize, setEffectiveFontSize] = useState(fontSize);
-  const [lightingMode, setLightingMode] = useState(() => {
+
+  const [lightingMode] = useState(() => {
     const saved = localStorage.getItem("lightingMode");
     return saved || "individual";
+  });
+  const [ledColor] = useState(() => {
+    const saved = localStorage.getItem("ledColor");
+    return saved || "#ffffff";
   });
   const [fullTextModalOpen, setFullTextModalOpen] = useState(false);
   const [fireworks, setFireworks] = useState([]);
 
   const progressFillRef = useRef(null);
   const wordContainerRef = useRef(null);
+  const lastKeypressRef = useRef(null);
+  const intervalsRef = useRef([]);
 
   // Set fixed font size without auto-scaling
   useEffect(() => {
     setEffectiveFontSize(fontSize);
-    // Persist fontSize changes to localStorage
+  }, [fontSize]);
+
+  // Persist settings to localStorage
+  useEffect(() => {
     localStorage.setItem("fontSize", fontSize.toString());
   }, [fontSize]);
+
+  // Reset lights when Display component mounts (app startup only)
+  useEffect(() => {
+    fetch("http://localhost:5050/lights_off", { method: "POST" })
+      .then(() => console.log("Reset keyboard lights on Display load"))
+      .catch(err => console.error("Error resetting lights:", err));
+  }, []);
+
+  // Light up a key on the keyboard (individual or region mode)
+  const lightKey = useCallback((key) => {
+    const endpoint = lightingMode === "regional" 
+      ? "http://localhost:5050/lights_on_region"
+      : "http://localhost:5050/lights_on_key";
+    
+    fetch(endpoint, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        key: key === ' ' ? ' ' : key,
+        color: ledColor
+        // No duration - key stays lit until explicitly turned off
+      })
+    }).catch(err => console.error("Error lighting key:", err));
+  }, [lightingMode, ledColor]);
+
+  // Turn off a key on the keyboard (individual or region mode)
+  const turnOffKey = useCallback((key) => {
+    const endpoint = lightingMode === "regional"
+      ? "http://localhost:5050/lights_off_region_for_key"
+      : "http://localhost:5050/lights_off_key";
+    
+    fetch(endpoint, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        key: key === ' ' ? ' ' : key
+      })
+    }).catch(err => console.error("Error turning off key:", err));
+  }, [lightingMode]);
+
+  // Reset all keyboard lights
+  const resetKeyLights = useCallback(() => {
+    fetch("http://localhost:5050/lights_off", { method: "POST" })
+      .then(() => console.log("Keyboard lights reset"))
+      .catch(err => console.error("Error resetting lights:", err));
+  }, []);
+
+
+  // Keep track of the previous section for smooth transitions
+  const previousSectionRef = useRef("");
 
   // ----------------- LOAD CURRENT SECTION -----------------
   useEffect(() => {
@@ -58,6 +118,10 @@ function Display() {
     setCurrentLetterIndex(0);
     setSectionCompleted(false);
     updateProgressBar(0, section.length);
+    
+    // Reset timing data for new section
+    lastKeypressRef.current = Date.now(); // Set to now so first letter timing is recorded
+    intervalsRef.current = [];
     
     // Turn off the first key of the previous section to avoid flashing
     if (previousSectionRef.current && previousSectionRef.current.length > 0) {
@@ -90,6 +154,12 @@ function Display() {
       }
 
       if (e.key === currentSection[currentLetterIndex]) {
+        // Record timing for data collection FIRST
+        const now = Date.now();
+        const interval = now - lastKeypressRef.current;
+        intervalsRef.current.push(interval);
+        lastKeypressRef.current = now;
+        
         // Turn off the current key
         turnOffKey(currentSection[currentLetterIndex]);
         
@@ -97,17 +167,42 @@ function Display() {
         setCurrentLetterIndex(next);
         updateProgressBar(next, currentSection.length);
         
-        fetch("http://localhost:5050/lights_on_key", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            key: e.key === ' ' ? 'SPACE' : e.key.toUpperCase(),
-            color: lightingMode === "individual" ? "#00FF00" : "#00FF00"
-          })
-        }).catch(err => console.error("Error lighting key:", err));
+        // Light up the next key (if not at end of section)
+        if (next < currentSection.length) {
+          const nextKey = currentSection[next];
+          lightKey(nextKey);
+        }
 
         if (next === currentSection.length) {
           setSectionCompleted(true);
+
+          // Save timing data to localStorage (intervals already includes last letter from above)
+          try {
+            const intervals = intervalsRef.current;
+            localStorage.setItem('intervals', JSON.stringify(intervals));
+            
+            // Build per-letter stats
+            // Now intervals[0] is for letter[0], intervals[1] is for letter[1], etc.
+            // Because we start timing when the section loads
+            const perLetterStats = {};
+            
+            for (let i = 0; i < intervals.length && i < currentSection.length; i++) {
+              const letter = currentSection[i].toLowerCase();
+              if (!perLetterStats[letter]) perLetterStats[letter] = [];
+              perLetterStats[letter].push(intervals[i]);
+            }
+            
+            // Merge with existing stats
+            const existing = localStorage.getItem('perLetterStats');
+            const existingStats = existing ? JSON.parse(existing) : {};
+            for (const [letter, times] of Object.entries(perLetterStats)) {
+              if (!existingStats[letter]) existingStats[letter] = [];
+              existingStats[letter].push(...times);
+            }
+            localStorage.setItem('perLetterStats', JSON.stringify(existingStats));
+          } catch (err) {
+            console.error('Failed to save stats:', err);
+          }
 
           const newFireworks = [];
           const baseX = window.innerWidth / 2;
@@ -171,7 +266,10 @@ function Display() {
     }
   };
 
-  const goBack = () => navigate("/");
+  const goBack = () => {
+    resetKeyLights();
+    navigate("/");
+  };
 
   // ----------------- RENDER -----------------
   return (
@@ -240,8 +338,6 @@ function Display() {
         <SettingsModal
           fontSize={fontSize}
           setFontSize={setFontSize}
-          lightingMode={lightingMode}
-          setLightingMode={setLightingMode}
           resetKeyLights={resetKeyLights}
           close={() => setSettingsOpen(false)}
         />

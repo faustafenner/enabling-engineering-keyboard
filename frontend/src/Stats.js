@@ -1,8 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 function Stats() {
   const navigate = useNavigate();
+  const [refreshKey, setRefreshKey] = useState(0);
+  
   const state = (window.history && window.history.state && window.history.state && window.history.state.usr) ? window.history.state.usr : null;
   // react-router puts navigate state under history.state.usr in many setups; fall back to localStorage
   const saved = localStorage.getItem('perLetterStats');
@@ -44,9 +46,12 @@ function Stats() {
         <button onClick={downloadCSV} style={{ marginLeft: 12 }}>Download CSV</button>
         <button
           onClick={() => {
-            try { localStorage.removeItem('perLetterStats'); localStorage.removeItem('intervals'); } catch(e) {}
-            // reload to show cleared state
-            window.location.reload();
+            try { 
+              localStorage.removeItem('perLetterStats'); 
+              localStorage.removeItem('intervals'); 
+            } catch(e) {}
+            // Trigger re-render by updating state instead of reloading page
+            setRefreshKey(prev => prev + 1);
           }}
           style={{ marginLeft: 12, background: '#d32f2f', color: '#fff' }}
         >Reset</button>

@@ -1,0 +1,19 @@
+/Users/faustafenner/Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+[INFO] Connected to SteelSeries GG at http://127.0.0.1:49189 (coreProps: /Library/Application Support/SteelSeries Engine 3/coreProps.json)
+[INFO] All keys lights off (no-flash)
+Initialized lighting: all keys turned off.
+ * Serving Flask app 'light_server'
+ * Debug mode: off
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5050
+[33mPress CTRL+C to quit[0m
+127.0.0.1 - - [20/Nov/2025 16:26:28] "POST /lights_off HTTP/1.1" 200 -
+127.0.0.1 - - [20/Nov/2025 16:26:32] "OPTIONS /lights_on_key HTTP/1.1" 200 -
+127.0.0.1 - - [20/Nov/2025 16:26:32] "POST /lights_off HTTP/1.1" 200 -
+127.0.0.1 - - [20/Nov/2025 16:26:32] "POST /lights_on_key HTTP/1.1" 200 -
+127.0.0.1 - - [20/Nov/2025 16:26:33] "OPTIONS /lights_off_key HTTP/1.1" 200 -
+127.0.0.1 - - [20/Nov/2025 16:26:35] "POST /lights_on_key HTTP/1.1" 200 -
+127.0.0.1 - - [20/Nov/2025 16:26:35] "POST /lights_off_key HTTP/1.1" 200 -
+127.0.0.1 - - [20/Nov/2025 16:26:37] "POST /lights_on_key HTTP/1.1" 200 -
+127.0.0.1 - - [20/Nov/2025 16:26:37] "POST /lights_off_key HTTP/1.1" 200 -
