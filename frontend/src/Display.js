@@ -60,13 +60,6 @@ function Display() {
     localStorage.setItem("fontSize", fontSize.toString());
   }, [fontSize]);
 
-  // Reset lights when Display component mounts (app startup only)
-  useEffect(() => {
-    fetch("http://localhost:5050/lights_off", { method: "POST" })
-      .then(() => console.log("Reset keyboard lights on Display load"))
-      .catch(err => console.error("Error resetting lights:", err));
-  }, []);
-
   // Light up a key on the keyboard (individual or region mode)
   const lightKey = useCallback((key) => {
     const endpoint = lightingMode === "regional" 
@@ -267,8 +260,15 @@ function Display() {
   };
 
   const goBack = () => {
-    resetKeyLights();
-    navigate("/");
+    fetch("http://localhost:5050/lights_off", { method: "POST" })
+      .then(() => {
+        console.log("Lights turned off");
+        navigate("/");
+      })
+      .catch(err => {
+        console.error("Failed to turn off lights:", err);
+        navigate("/");
+      });
   };
 
   // ----------------- RENDER -----------------

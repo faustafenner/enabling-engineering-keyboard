@@ -23,6 +23,14 @@ function App() {
       await fetch('http://localhost:5050/lights_off', { method: 'POST' });
       console.log('Requested lights off on app load');
       
+      // Bind all regions with the selected color
+      await fetch('http://localhost:5050/bind_regions_color', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ color: selectedColor })
+      });
+      console.log('Bound regions with selected color');
+      
       // Prime keyboard with all keys using the selected color
       console.log('Starting keyboard priming...');
       const allKeys = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 !@#$%^&*()_+-=[]{}|;':\",./<>?`~";

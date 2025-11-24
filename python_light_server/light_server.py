@@ -44,31 +44,13 @@ for letter in string.ascii_lowercase:
     except Exception as e:
         print(f"Failed to pre-bind {letter}: {e}")
 
-# Pre-bind all regions to avoid flashing on first use in regional mode
-# Use one event per region instead of per key to avoid rebinding
-for region_name, region_keys in KEYBOARD_REGIONS.items():
+# Register region events (but don't bind colors yet - will be done during priming)
+for region_name in KEYBOARD_REGIONS.keys():
     event = f"{region_name.upper()}_REGION_EVENT"
     try:
         lighting.register_event(event)
-        # Bind the entire region once
-        hex_color = "ffffff"  # White color without the # prefix
-        r, g, b = tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))
-        handlers = []
-        for k in region_keys:
-            handlers.append({
-                "device-type": "keyboard",
-                "zone": k,
-                "mode": "color",
-                "color": {"red": r, "green": g, "blue": b}
-            })
-        payload = {
-            "game": lighting.game,
-            "event": event,
-            "handlers": handlers
-        }
-        lighting._post("bind_game_event", payload)
     except Exception as e:
-        print(f"Failed to pre-bind region {region_name}: {e}")
+        print(f"Failed to register region event {region_name}: {e}")
 
 # Add a startup initializer to ensure all lights are off when the server starts
 def initialize_lighting():
@@ -148,26 +130,6 @@ def lights_on_region():
     region_keys = KEYBOARD_REGIONS[region_name]
     
     try:
-        # Only rebind if color has changed from white (the default)
-        # This avoids unnecessary rebinding and flashing
-        if color != "#FFFFFF" and color != "#ffffff":
-            hex_color = color.lstrip("#")
-            r, g, b = tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))
-            handlers = []
-            for k in region_keys:
-                handlers.append({
-                    "device-type": "keyboard",
-                    "zone": k,
-                    "mode": "color",
-                    "color": {"red": r, "green": g, "blue": b}
-                })
-            payload = {
-                "game": lighting.game,
-                "event": event,
-                "handlers": handlers
-            }
-            lighting._post("bind_game_event", payload)
-        
         # Stop any existing refresher for this event
         lighting._stop_event_refresher(event)
         
@@ -260,10 +222,72 @@ def lights_off_region_for_key():
         print(f"Error turning off region for key '{key}': {e}")
         return jsonify({"error": str(e)}), 500
 
+# Endpoint to bind all regions with a specific color
+@app.route("/bind_regions_color", methods=["POST"])
+def bind_regions_color():
+    data = request.json
+    color = data.get("color", "#FFFFFF")
+    
+    try:
+        hex_color = color.lstrip("#")
+        r, g, b = tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))
+        
+        for region_name, region_keys in KEYBOARD_REGIONS.items():
+            event = f"{region_name.upper()}_REGION_EVENT"
+            handlers = []
+            for k in region_keys:
+                handlers.append({
+                    "device-type": "keyboard",
+                    "zone": k,
+                    "mode": "color",
+                    "color": {"red": r, "green": g, "blue": b}
+                })
+            payload = {
+                "game": lighting.game,
+                "event": event,
+                "handlers": handlers
+            }
+            lighting._post("bind_game_event", payload)
+        
+        return jsonify({"status": f"All regions bound with color {color}"})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 # Endpoint to turn off all keyboard lights
 @app.route("/lights_off", methods=["POST"])
 def lights_off():
     try:
+        # Stop all refreshers and turn off individual keys
+        for letter in string.ascii_lowercase:
+            event = f"{letter.upper()}KEY_EVENT"
+            try:
+                lighting._stop_event_refresher(event)
+                # Turn off the event
+                payload = {
+                    "game": lighting.game,
+                    "event": event,
+                    "data": {"value": 0}
+                }
+                lighting._post("game_event", payload)
+            except Exception:
+                pass
+        
+        # Stop all region refreshers and turn them off
+        for region_name in KEYBOARD_REGIONS.keys():
+            event = f"{region_name.upper()}_REGION_EVENT"
+            try:
+                lighting._stop_event_refresher(event)
+                # Turn off the event
+                payload = {
+                    "game": lighting.game,
+                    "event": event,
+                    "data": {"value": 0}
+                }
+                lighting._post("game_event", payload)
+            except Exception:
+                pass
+        
+        # Also call the main lights_off for good measure
         lighting.lights_off()
         return jsonify({"status": "All keys lights off"})
     except Exception as e:
