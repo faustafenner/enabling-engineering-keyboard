@@ -41,9 +41,9 @@ function Stats() {
   return (
     <div style={{ padding: 24, color: '#fff' }}>
       <h1>Typing Stats</h1>
-      <div style={{ marginBottom: 12 }}>
+      <div style={{ marginBottom: 12, display: 'flex', justifyContent: 'center', gap: '12px' }}>
         <button onClick={() => navigate(-1)}>Back</button>
-        <button onClick={downloadCSV} style={{ marginLeft: 12 }}>Download CSV</button>
+        <button onClick={downloadCSV}>Download CSV</button>
         <button
           onClick={() => {
             try { 
@@ -53,7 +53,7 @@ function Stats() {
             // Trigger re-render by updating state instead of reloading page
             setRefreshKey(prev => prev + 1);
           }}
-          style={{ marginLeft: 12, background: '#d32f2f', color: '#fff' }}
+          style={{ background: '#d32f2f', color: '#fff' }}
         >Reset</button>
       </div>
       {letters.length === 0 ? (

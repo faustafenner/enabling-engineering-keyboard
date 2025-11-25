@@ -74,11 +74,11 @@ h2 {
 
 .input-area {
   width: 97.5%;
-  height: 200px;
+  height: 300px;
   padding: 10px;
   border-radius: 20px;
   resize: vertical;
-  font-size: 16px;
+  font-size: 32px;
   display: block;
   margin: 20px auto;
   background-color: #ffffff;
@@ -305,12 +305,33 @@ button.stats-btn {
   display: inline-block;
   width: auto;
   min-height: initial;
+  margin-left: 25px;
 }
 
 /* optional hover state matching other nav buttons */
 button.stats-btn:hover,
 .stats-btn:hover {
   background-color: #474747;
+}
+
+/* Setting buttons (font size, lighting type) */
+.setting-btn {
+  flex: 1;
+  color: #fff;
+  border: none;
+  border-radius: 35px;
+  cursor: pointer;
+  font-size: 20px;
+  background-color: #333;
+  min-width: 100px;
+}
+
+.setting-btn.active {
+  background-color: #4caf50;
+}
+
+.setting-btn:hover {
+  opacity: 0.9;
 }
 
 /* Two-column layout for the input page */
@@ -326,6 +347,7 @@ button.stats-btn:hover,
   /* keep the outer pane transparent so the inner .pane-container (card) shows on the dark page background */
   background-color: transparent;
   padding: 8px 0;
+  margin-left: 25px;
 }
 
 .right-pane {
@@ -333,6 +355,7 @@ button.stats-btn:hover,
   /* same approach as left-pane: inner .pane-container will be the white card */
   background-color: transparent;
   padding: 8px 0;
+  margin-right: 25px;
 }
 
 /* Center controls inside the settings pane without affecting other pages */

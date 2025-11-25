@@ -1,0 +1,25 @@
+.success-container {
+  text-align: center;
+  margin-top: 250px;
+}
+
+.success-container h1 {
+  color: #fff;
+  font-size: 48px;
+  margin-bottom: 32px;
+}
+
+.success-btn {
+  padding: 12px 24px;
+  font-size: 18px;
+  background-color: #4caf50;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  min-height: 0;
+}
+
+.success-btn:hover {
+  background-color: #45a049;
+}

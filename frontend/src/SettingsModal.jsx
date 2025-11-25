@@ -49,17 +49,7 @@ export default function SettingsModal({
             <button
               key={size}
               onClick={() => setFontSize(size)}
-              className={fontSize === size ? "active" : ""}
-              style={{
-                flex: 1,
-                padding: "6px 0",
-                backgroundColor: fontSize === size ? "#2196f3" : "#333",
-                color: "#fff",
-                border: "none",
-                borderRadius: "4px",
-                cursor: "pointer",
-                fontSize: "14px",
-              }}
+              className={`settings-size-btn ${fontSize === size ? "active" : ""}`}
             >
               {size === 80 ? "Small" : size === 120 ? "Medium" : "Large"}
             </button>
@@ -68,14 +58,7 @@ export default function SettingsModal({
 
         <button 
           onClick={close}
-          style={{
-            padding: "8px 16px",
-            backgroundColor: "#333",
-            color: "#fff",
-            border: "none",
-            borderRadius: "4px",
-            cursor: "pointer",
-          }}
+          className="settings-close-btn"
         >
           Close
         </button>

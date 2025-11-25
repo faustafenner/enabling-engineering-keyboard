@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { IoStatsChart } from "react-icons/io5";
+import { IoStatsChart, IoInformationCircleOutline } from "react-icons/io5";
 import "./Input.css";
 
 function Input() {
@@ -22,6 +22,7 @@ function Input() {
     const saved = localStorage.getItem("lightingMode");
     return saved || "individual";
   });
+  const [infoModalOpen, setInfoModalOpen] = useState(false);
 
   const progressFillRef = useRef(null);
 
@@ -144,7 +145,7 @@ function Input() {
     <div>
       {/* top header stays at top across the page */}
       <div className="top-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 30, marginBottom: 12 }}>
-        <button onClick={() => navigate("/stats")} className="stats-btn" style={{ marginLeft: 8 }} aria-label="Open stats">
+        <button onClick={() => navigate("/stats")} className="stats-btn" style={{ marginLeft: 25 }} aria-label="Open stats">
           <IoStatsChart size={18} />
         </button>
         <h1 style={{ fontSize: 48 }}>Keyboard Setup Wizard</h1>
@@ -153,7 +154,14 @@ function Input() {
 
       <div className="page-container" style={{ marginTop: 70 }}>
       <div className="left-pane">
-        <h1>Typing Content</h1>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+          <h1>Typing Content</h1>
+          <IoInformationCircleOutline 
+            size={24} 
+            style={{ cursor: 'pointer', color: '#bbb' }}
+            onClick={() => setInfoModalOpen(true)}
+          />
+        </div>
   <div className="pane-container">
           <textarea
             className="input-area"
@@ -179,27 +187,24 @@ function Input() {
           <div style={{ marginTop: 12 }}>
             {/* <label style={{ color: "#fff", display: 'block', marginBottom: 6 }}>Font size:</label> */}
             <h1>Font Size</h1>
-            <div style={{ display: "flex", flexDirection: "row", justifyContent: "center", gap: "8px" }}>
+            <div style={{ display: "flex", gap: "8px" }}>
               <button 
                 type="button" 
-                className={`stats-btn ${fontSize === 80 ? 'active' : ''}`} 
-                style={{ marginRight: 8, backgroundColor: fontSize === 80 ? '#007bff' : '#616161' }}
+                className={`setting-btn ${fontSize === 80 ? 'active' : ''}`}
                 onClick={() => setFontSize(80)}
               >
                 Small
               </button>
               <button 
                 type="button" 
-                className={`stats-btn ${fontSize === 120 ? 'active' : ''}`} 
-                style={{ marginRight: 8, backgroundColor: fontSize === 120 ? '#007bff' : '#616161' }}
+                className={`setting-btn ${fontSize === 120 ? 'active' : ''}`}
                 onClick={() => setFontSize(120)}
               >
                 Medium
               </button>
               <button 
                 type="button" 
-                className={`stats-btn ${fontSize === 160 ? 'active' : ''}`}
-                style={{ backgroundColor: fontSize === 160 ? '#007bff' : '#616161' }}
+                className={`setting-btn ${fontSize === 160 ? 'active' : ''}`}
                 onClick={() => setFontSize(160)}
               >
                 Large
@@ -217,31 +222,86 @@ function Input() {
 
           <div style={{ marginTop: 16 }}>
             {/* <label style={{ color: "#fff", display: 'block', marginBottom: 6 }}>Lighting type:</label> */}
-            <h1>Lighting Type</h1>
-            <div style={{ display: "flex", flexDirection: "row", justifyContent: "center", gap: "8px" }}>
-            <label style={{ color: '#fff', marginRight: 12 }}>
-              <input 
-                type="radio" 
-                name="lightingType" 
-                checked={lightingMode === "individual"}
-                onChange={() => setLightingMode("individual")}
-              /> Individual
-            </label>
-            <label style={{ color: '#fff' }}>
-              <input 
-                type="radio" 
-                name="lightingType" 
-                checked={lightingMode === "regional"}
-                onChange={() => setLightingMode("regional")}
-              /> Regional
-            </label>
-            <small style={{ color: '#bbb', display: 'block', }}></small>
+            <h1>Lighting Mode</h1>
+            <div style={{ display: "flex", gap: "8px" }}>
+              <button
+                onClick={() => setLightingMode("individual")}
+                className={`setting-btn ${lightingMode === 'individual' ? 'active' : ''}`}
+              >
+                Individual
+              </button>
+              <button
+                onClick={() => setLightingMode("regional")}
+                className={`setting-btn ${lightingMode === 'regional' ? 'active' : ''}`}
+              >
+                Regional
+              </button>
             </div>
+            <small style={{ color: '#bbb', display: 'block', }}></small>
           </div>
 
         </div>
       </div>
     </div>
+
+    {/* Info Modal */}
+    {infoModalOpen && (
+      <div 
+        className="modal-overlay" 
+        onClick={() => setInfoModalOpen(false)}
+        style={{
+          position: "fixed",
+          inset: 0,
+          background: "rgba(0, 0, 0, 0.7)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          zIndex: 1400,
+        }}
+      >
+        <div 
+          className="modal-panel" 
+          onClick={(e) => e.stopPropagation()}
+          style={{
+            background: "#121212",
+            padding: "30px",
+            borderRadius: "10px",
+            width: "500px",
+            maxWidth: "calc(100% - 32px)",
+            boxShadow: "0 6px 24px rgba(0, 0, 0, 0.6)",
+            color: "#fff"
+          }}
+        >
+          <h2 style={{ marginTop: 0, marginBottom: "16px" }}>Typing Content Instructions</h2>
+          <p style={{ lineHeight: "1.6", marginBottom: "12px" }}>
+            Enter the text you want to practice typing. Each line will become a separate word/section.
+          </p>
+          <p style={{ lineHeight: "1.6", marginBottom: "12px" }}>
+            <strong>Tips:</strong>
+          </p>
+          <ul style={{ lineHeight: "1.8", marginBottom: "16px", paddingLeft: "20px" }}>
+            <li>Each line becomes one word or phrase to type</li>
+            <li>Press Enter to create a new line</li>
+            <li>Longer lines (over 100 characters) will be automatically split</li>
+            <li>Empty lines are ignored</li>
+          </ul>
+          <button 
+            onClick={() => setInfoModalOpen(false)}
+            style={{
+              padding: "8px 20px",
+              backgroundColor: "#4caf50",
+              color: "#fff",
+              border: "none",
+              borderRadius: "4px",
+              cursor: "pointer",
+              fontSize: "14px"
+            }}
+          >
+            Got it
+          </button>
+        </div>
+      </div>
+    )}
     </div>
   );
 }

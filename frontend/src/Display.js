@@ -288,8 +288,8 @@ function Display() {
       {fullTextModalOpen && (
         <div className="modal-overlay" onClick={() => setFullTextModalOpen(false)}>
           <div className="modal-panel" onClick={(e) => e.stopPropagation()}>
-            <h3>Current Text</h3>
-            <p style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>{currentSection}</p>
+            <h3>Current Text:</h3>
+            <p style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word', fontSize: '24px' }}>{currentSection}</p>
             <button onClick={() => setFullTextModalOpen(false)}>Close</button>
           </div>
         </div>
@@ -328,9 +328,9 @@ function Display() {
       <button 
         className="settings-top-btn" 
         onClick={() => setFullTextModalOpen(true)}
-        style={{ right: '140px' }}
+        style={{ right: '156px' }}
       >
-        Show Full Text
+        Full Text
       </button>
 
       {/* Modal */}
